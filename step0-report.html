@@ -1,0 +1,1611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Steps 0–3 — Stability of the Outer Catenoid (Report)</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
+  <style>
+    :root {
+      --bg: #fafaf8;
+      --card: #ffffff;
+      --accent: #2d5ba4;
+      --accent-light: #e8eef7;
+      --text: #2a2a2a;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --sidebar-width: 15rem;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; scroll-padding-top: 1rem; }
+    body {
+      font-family: 'Georgia', serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.8;
+    }
+
+    /* Layout — CSS grid with fixed columns is rock-steady across zoom levels */
+    .layout {
+      display: grid;
+      grid-template-columns: var(--sidebar-width) 1fr;
+      min-height: 100vh;
+      position: relative;
+    }
+    /* Paint the sidebar column's white background + right border across the FULL layout height,
+       so it extends past the end of the TOC content when the TOC is shorter than the viewport. */
+    .layout::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: var(--sidebar-width);
+      background: var(--card);
+      border-right: 1px solid var(--border);
+      z-index: 0;
+    }
+    .sidebar, .main { position: relative; z-index: 1; }
+
+    /* Sidebar — sticky so it follows page scroll (stays visible as you read).
+       Background + border are painted by .layout::before so they extend full height. */
+    .sidebar {
+      position: sticky;
+      top: 0;
+      align-self: start;
+      max-height: 100vh;
+      overflow-y: auto;
+      padding: 1.5rem 1rem;
+    }
+    .sidebar-title {
+      font-weight: bold;
+      color: var(--accent);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--accent);
+    }
+    .toc-nav ul { list-style: none; padding: 0; }
+    .toc-nav li { margin-bottom: 0; }
+    .toc-nav a {
+      display: block;
+      padding: 0.3rem 0.5rem;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      border-radius: 4px;
+      border-left: 3px solid transparent;
+      transition: color 0.15s, background 0.15s;
+      line-height: 1.4;
+    }
+    .toc-nav a:hover {
+      color: var(--accent);
+      background: var(--accent-light);
+    }
+    .toc-nav .toc-section {
+      font-weight: bold;
+      color: var(--accent);
+      margin-top: 0.8rem;
+      font-size: 0.9rem;
+    }
+    .toc-nav .toc-indent { padding-left: 0.8rem; }
+
+    /* Main content */
+    .main {
+      min-width: 0;
+      display: flex;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .main-inner {
+      max-width: 850px;
+      width: 100%;
+    }
+
+    h1 { font-size: 1.8rem; margin-bottom: 0.5rem; color: var(--accent); }
+    h2 { font-size: 1.3rem; margin: 2rem 0 1rem; border-bottom: 2px solid var(--accent); padding-bottom: 0.3rem; }
+    h3 { font-size: 1.1rem; margin: 1.5rem 0 0.8rem; color: var(--accent); }
+    p { margin: 0.8rem 0; }
+    .subtitle { color: var(--muted); font-size: 0.95rem; margin-bottom: 2rem; }
+    .math-display { margin: 1rem 0; text-align: center; }
+    .boxed { background: #e8eef7; padding: 1rem; border-radius: 6px; border-left: 4px solid var(--accent); margin: 1rem 0; }
+    .result { background: #f0fdf4; border-left: 4px solid #16a34a; padding: 1rem; border-radius: 6px; margin: 1.5rem 0; }
+    .result-title { font-weight: bold; color: #16a34a; margin-bottom: 0.5rem; }
+    .question { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 1rem; border-radius: 6px; margin: 1.5rem 0; }
+    .question-title { font-weight: bold; color: #b45309; margin-bottom: 0.5rem; }
+    ul, ol { margin: 0.8rem 0 0.8rem 1.5rem; }
+    li { margin: 0.3rem 0; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+
+    /* Narrow viewport / high zoom: sidebar becomes a static top bar so content never overlaps it */
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar {
+        position: static;
+        max-height: none;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+      .main { padding: 1.5rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-title">Contents</div>
+  <nav class="toc-nav">
+    <ul>
+      <li class="toc-section"><a href="#basics">Basics</a></li>
+      <li class="toc-indent"><a href="#b-minimal">1. Minimal surface</a></li>
+      <li class="toc-indent"><a href="#b-catenoids">2. Inner vs outer catenoid</a></li>
+      <li class="toc-indent"><a href="#b-stable">3. What "stable" means</a></li>
+      <li class="toc-section"><a href="#step0">Step 0 — Second Variation</a></li>
+      <li class="toc-indent"><a href="#s0-goal">1. Goal</a></li>
+      <li class="toc-indent"><a href="#s0-area">2. Area Formula</a></li>
+      <li class="toc-indent"><a href="#s0-perturb">3. Perturbation Setup</a></li>
+      <li class="toc-indent"><a href="#s0-taylor">4. Taylor Expansion</a></li>
+      <li class="toc-indent"><a href="#s0-catenoid">5. Catenoid Substitution</a></li>
+      <li class="toc-indent"><a href="#s0-ibp1">6. Integration by Parts</a></li>
+      <li class="toc-indent"><a href="#s0-sub">7. Substitution</a></li>
+      <li class="toc-indent"><a href="#s0-calc">8. Calculations</a></li>
+      <li class="toc-indent"><a href="#s0-ibp2">9. Final IBP</a></li>
+      <li class="toc-indent"><a href="#s0-result">10. Jacobi Operator</a></li>
+      <li class="toc-section"><a href="#step1">Step 1 — Jacobi ODE</a></li>
+      <li class="toc-indent"><a href="#s1-goal">1. Goal</a></li>
+      <li class="toc-indent"><a href="#s1-ode">2. Simplify the ODE</a></li>
+      <li class="toc-indent"><a href="#s1-solutions">3. Two solutions from symmetry</a></li>
+      <li class="toc-indent"><a href="#s1-verify">4. Verify</a></li>
+      <li class="toc-indent"><a href="#s1-choice">5. Pick the right one</a></li>
+      <li class="toc-section"><a href="#step2">Step 2 — h &gt; 0 on [−d,d]</a></li>
+      <li class="toc-indent"><a href="#s2-goal">1. Goal</a></li>
+      <li class="toc-indent"><a href="#s2-reduce">2. Reduce to one variable</a></li>
+      <li class="toc-indent"><a href="#s2-shape">3. Shape of h(u)</a></li>
+      <li class="toc-indent"><a href="#s2-uc">4. The critical value u_c</a></li>
+      <li class="toc-indent"><a href="#s2-ushape">5. Outer ⇒ d/R &lt; u_c</a></li>
+      <li class="toc-indent"><a href="#s2-conclude">6. Conclusion</a></li>
+      <li class="toc-section"><a href="#step3">Step 3 — Stability Calculation</a></li>
+      <li class="toc-indent"><a href="#s3-goal">1. Goal</a></li>
+      <li class="toc-indent"><a href="#s3-plan">2. The plan in plain English</a></li>
+      <li class="toc-indent"><a href="#s3-lhs">3. Compute the LHS</a></li>
+      <li class="toc-indent"><a href="#s3-rhs">4. Compute the RHS</a></li>
+      <li class="toc-indent"><a href="#s3-equal">5. LHS = RHS</a></li>
+      <li class="toc-indent"><a href="#s3-strict">6. Strict inequality</a></li>
+    </ul>
+  </nav>
+</aside>
+
+<!-- Main content -->
+<main class="main">
+<div class="main-inner">
+
+<h1>Steps 0–3 — Stability of the Outer Catenoid</h1>
+<p class="subtitle">Full derivation with explanations | Outer Catenoid Stability</p>
+
+<!-- ============================================================= -->
+<!-- ===================== BASICS ================================= -->
+<!-- ============================================================= -->
+<h2 id="basics" style="font-size: 1.5rem; border-bottom: 3px solid var(--accent);">Basics</h2>
+
+<h3 id="b-minimal">1. Minimal surface</h3>
+<p>A surface whose mean curvature vanishes everywhere:</p>
+<div class="math-display">
+  $$ H = 0 \;\Longleftrightarrow\; A'(0) = 0 \text{ for every wiggle} $$
+</div>
+<p>Equivalent: a <strong>critical point of area</strong> (slope = 0). Physical realization: a soap film — surface tension forces $H=0$.</p>
+<p style="color: var(--muted); font-size: 0.9rem;"><strong>Warning:</strong> "minimal" just means critical. It does NOT automatically mean "lowest area". Could be a local min, local max, or saddle.</p>
+
+<hr>
+
+<h3 id="b-catenoids">2. Inner vs outer catenoid</h3>
+
+<p><strong>Setup.</strong> Two wire rings, same radius $r$, separated vertically by $2d$. Dip in soap. A film forms between them.</p>
+
+<svg viewBox="0 0 420 200" style="display: block; margin: 1rem auto; width: 100%; max-width: 460px;">
+  <!-- z-axis -->
+  <line x1="50" y1="100" x2="370" y2="100" stroke="#ccc" stroke-width="1.5" stroke-dasharray="6"/>
+  <text x="378" y="104" font-size="12" fill="#666">z-axis</text>
+
+  <!-- left ring -->
+  <ellipse cx="100" cy="100" rx="8" ry="55" fill="none" stroke="#888" stroke-width="2.5"/>
+  <!-- right ring -->
+  <ellipse cx="320" cy="100" rx="8" ry="55" fill="none" stroke="#888" stroke-width="2.5"/>
+
+  <!-- film silhouette -->
+  <path d="M 100,45 Q 210,80 320,45" fill="none" stroke="#2d5ba4" stroke-width="2.5"/>
+  <path d="M 100,155 Q 210,120 320,155" fill="none" stroke="#2d5ba4" stroke-width="2.5"/>
+
+  <!-- labels -->
+  <text x="100" y="180" text-anchor="middle" font-size="12" fill="#666">z = −d</text>
+  <text x="320" y="180" text-anchor="middle" font-size="12" fill="#666">z = +d</text>
+  <line x1="100" y1="100" x2="100" y2="45" stroke="#ea580c" stroke-width="2" marker-end="url(#arr-rad-setup)"/>
+  <text x="82" y="72" font-size="12" fill="#ea580c">r</text>
+  <defs>
+    <marker id="arr-rad-setup" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#ea580c"/>
+    </marker>
+  </defs>
+  <text x="210" y="100" text-anchor="middle" font-size="11" fill="#2d5ba4" font-style="italic">soap film</text>
+</svg>
+
+<p><strong>Film shape.</strong> The film is always a catenoid:</p>
+<div class="math-display">
+  $$ f(z) = R\cosh(z/R) $$
+</div>
+<p>$R$ is the radius at the narrowest point (the "neck" at $z=0$).</p>
+
+<p><strong>Boundary condition.</strong> The film must touch the rings at $z=\pm d$:</p>
+<div class="math-display">
+  $$ R\cosh(d/R) \;=\; r $$
+</div>
+
+<p><strong>Why two solutions?</strong> Look at the left-hand side $R\cosh(d/R)$ as $R$ varies:</p>
+
+<div class="math-display">
+  $$ \begin{array}{c|l}
+  R \text{ small} & \cosh(d/R) \text{ huge} \;\Rightarrow\; R\cosh(d/R) \text{ big} \\
+  R \text{ large} & \cosh(d/R) \to 1 \text{ but } R \text{ big} \;\Rightarrow\; R\cosh(d/R) \text{ big} \\
+  R \text{ in between} & \text{has a MINIMUM somewhere}
+  \end{array} $$
+</div>
+
+<p>So $R\cosh(d/R)$ is a <strong>U-shape</strong> as a function of $R$. The horizontal line $y = r$ cuts the U <strong>twice</strong>:</p>
+
+<svg viewBox="0 0 460 220" style="display: block; margin: 1rem auto; width: 100%; max-width: 500px;">
+  <!-- axes -->
+  <line x1="50" y1="180" x2="430" y2="180" stroke="#666" stroke-width="1"/>
+  <text x="438" y="184" font-size="11" fill="#666">R</text>
+  <line x1="50" y1="30" x2="50" y2="185" stroke="#666" stroke-width="1"/>
+  <text x="28" y="35" font-size="11" fill="#666">y</text>
+
+  <!-- U-shape curve for R cosh(d/R) -->
+  <path d="M 70,35 Q 110,175 200,170 Q 270,167 340,120 Q 400,70 420,40" fill="none" stroke="#2d5ba4" stroke-width="2.5"/>
+  <text x="395" y="85" font-size="11" fill="#2d5ba4">y = R cosh(d/R)</text>
+
+  <!-- horizontal line y = r -->
+  <line x1="50" y1="100" x2="420" y2="100" stroke="#b45309" stroke-width="2" stroke-dasharray="5,3"/>
+  <text x="425" y="104" font-size="11" fill="#b45309">y = r</text>
+
+  <!-- intersection points -->
+  <circle cx="82" cy="100" r="5" fill="#dc2626"/>
+  <text x="82" y="88" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="bold">INNER</text>
+  <text x="82" y="200" text-anchor="middle" font-size="10" fill="#dc2626">small R</text>
+
+  <circle cx="368" cy="100" r="5" fill="#16a34a"/>
+  <text x="368" y="88" text-anchor="middle" font-size="11" fill="#16a34a" font-weight="bold">OUTER</text>
+  <text x="368" y="200" text-anchor="middle" font-size="10" fill="#16a34a">large R</text>
+</svg>
+
+<p>Two intersection points → two values of $R$ → two catenoids. The small-$R$ intersection is the <strong>inner</strong> (narrow neck); the large-$R$ intersection is the <strong>outer</strong> (wide neck).</p>
+
+<!-- two catenoids side-by-side, same rings -->
+<svg viewBox="0 0 520 220" style="display: block; margin: 1rem auto; width: 100%; max-width: 560px;">
+  <!-- ============ OUTER ============ -->
+  <text x="125" y="20" text-anchor="middle" font-size="13" fill="#16a34a" font-weight="bold">OUTER (large R)</text>
+  <!-- same two rings -->
+  <ellipse cx="70" cy="120" rx="9" ry="70" fill="none" stroke="#888" stroke-width="2"/>
+  <ellipse cx="180" cy="120" rx="9" ry="70" fill="none" stroke="#888" stroke-width="2"/>
+  <!-- fat catenoid: neck close to ring radius -->
+  <path d="M 70,50 Q 125,105 180,50" fill="none" stroke="#16a34a" stroke-width="2.5"/>
+  <path d="M 70,190 Q 125,135 180,190" fill="none" stroke="#16a34a" stroke-width="2.5"/>
+  <!-- neck marker -->
+  <line x1="125" y1="120" x2="125" y2="120" stroke="none"/>
+  <line x1="125" y1="120" x2="156" y2="120" stroke="#16a34a" stroke-width="1"/>
+  <text x="140" y="115" font-size="10" fill="#16a34a">R (big)</text>
+  <text x="125" y="210" text-anchor="middle" font-size="11" fill="#16a34a">wide neck — barely dips in</text>
+
+  <!-- divider -->
+  <line x1="270" y1="10" x2="270" y2="215" stroke="#ddd"/>
+
+  <!-- ============ INNER ============ -->
+  <text x="400" y="20" text-anchor="middle" font-size="13" fill="#dc2626" font-weight="bold">INNER (small R)</text>
+  <!-- SAME rings -->
+  <ellipse cx="345" cy="120" rx="9" ry="70" fill="none" stroke="#888" stroke-width="2"/>
+  <ellipse cx="455" cy="120" rx="9" ry="70" fill="none" stroke="#888" stroke-width="2"/>
+  <!-- pinched catenoid -->
+  <path d="M 345,50 Q 400,115 455,50" fill="none" stroke="#dc2626" stroke-width="2.5"/>
+  <path d="M 345,190 Q 400,125 455,190" fill="none" stroke="#dc2626" stroke-width="2.5"/>
+  <!-- tiny neck -->
+  <line x1="400" y1="120" x2="407" y2="120" stroke="#dc2626" stroke-width="1"/>
+  <text x="410" y="115" font-size="10" fill="#dc2626">R (small)</text>
+  <text x="400" y="210" text-anchor="middle" font-size="11" fill="#dc2626">narrow neck — pinched tight</text>
+</svg>
+
+<p><strong>Key point:</strong> same two rings, two different soap-film shapes. Both satisfy $R\cosh(d/R)=r$, both have $H=0$. They just pass through the "neck radius" at two different values of $R$.</p>
+
+<p>In practice: only the outer one actually appears (the inner one is unstable — any tiny jiggle collapses it). Our proof shows <em>why</em>: $A''(0) \geq 0$ for outer, $A''(0) < 0$ for some wiggle of the inner.</p>
+
+<hr>
+
+<h3 id="b-stable">3. What "stable" means</h3>
+
+<p>Poke the surface. Define $A(t)$ = area after poke of size $t$.</p>
+<div class="math-display">
+  $$ A(t) - A(0) \;\approx\; \tfrac{1}{2}\,t^2\,A''(0) \quad (\text{since } A'(0)=0) $$
+</div>
+<p>Soap wants least area, so:</p>
+<div class="math-display">
+  $$ \begin{array}{c|c}
+  A''(0) \geq 0 & \text{poke area} \geq A(0) \;\Rightarrow\; \text{soap pulls back} \;\Rightarrow\; \text{STABLE} \\
+  A''(0) < 0 & \text{poke area} < A(0) \;\Rightarrow\; \text{soap escapes} \;\Rightarrow\; \text{UNSTABLE}
+  \end{array} $$
+</div>
+
+<div class="boxed">
+  $$ \text{minimal surface}\;(H=0) \;\Longleftrightarrow\; A'(0) = 0 $$
+  $$ \text{stable} \;\Longleftrightarrow\; A'(0) = 0 \;\textbf{AND}\; A''(0) \geq 0 \;\text{for every poke} $$
+</div>
+
+<p>Minimal alone is not enough — we also need the second-derivative test. That's exactly what Step 0 computes.</p>
+
+<hr style="border-top: 3px solid var(--accent); margin: 3rem 0;">
+
+<!-- ============================================================= -->
+<!-- ===================== STEP 0 ================================= -->
+<!-- ============================================================= -->
+<h2 id="step0" style="font-size: 1.5rem; border-bottom: 3px solid var(--accent);">Step 0 — Second Variation Formula</h2>
+
+<h3 id="s0-goal">1. Goal — what does "stable" mean?</h3>
+
+<p><strong>Poke the catenoid. Does the poked shape have more or less area than the original?</strong></p>
+
+<div class="math-display">
+  $$ \begin{array}{c|c}
+  \text{poked area} > \text{original} & \Rightarrow\; \text{STABLE (springs back)} \\
+  \text{poked area} < \text{original} & \Rightarrow\; \text{UNSTABLE (keeps going)}
+  \end{array} $$
+</div>
+<p style="color: var(--muted); font-size: 0.9rem; margin-top: -0.3rem;">(Soap wants less area. More-area poke → soap pulls BACK to original. Less-area poke → soap keeps ESCAPING.)</p>
+
+<p><strong>Taylor gives the sign. Let $A(t)$ = area after poke of size $t$:</strong></p>
+<div class="math-display">
+  $$ A(t) \;=\; A(0) \;+\; t\,A'(0) \;+\; \tfrac{1}{2}\,t^2\,A''(0) \;+\; \cdots $$
+</div>
+<div class="math-display">
+  $$ A'(0) = 0 \quad\text{(catenoid is minimal)} \quad\Longrightarrow\quad A(t) - A(0) \;\approx\; \tfrac{1}{2}\,t^2\,A''(0) $$
+</div>
+
+<p>$t^2 \geq 0$ always, so:</p>
+<div class="math-display">
+  $$ \operatorname{sign}\bigl(A(t) - A(0)\bigr) \;=\; \operatorname{sign}\bigl(A''(0)\bigr) $$
+</div>
+
+<svg viewBox="0 0 520 180" style="display: block; margin: 1rem auto; width: 100%; max-width: 560px;">
+  <!-- LEFT: A''(0) > 0 -->
+  <text x="120" y="18" text-anchor="middle" font-size="13" fill="#16a34a" font-weight="bold">A''(0) &gt; 0 → STABLE</text>
+  <line x1="20" y1="140" x2="220" y2="140" stroke="#999" stroke-width="1"/>
+  <line x1="120" y1="30" x2="120" y2="150" stroke="#999" stroke-width="1"/>
+  <text x="228" y="144" font-size="11" fill="#666">t</text>
+  <text x="105" y="28" font-size="11" fill="#666">A(t)</text>
+  <path d="M 40,50 Q 120,160 200,50" fill="none" stroke="#16a34a" stroke-width="2.5"/>
+  <circle cx="120" cy="120" r="4" fill="#16a34a"/>
+  <text x="128" y="135" font-size="11" fill="#16a34a">A(0)</text>
+  <text x="120" y="172" text-anchor="middle" font-size="11" fill="#16a34a">poked area is higher</text>
+
+  <line x1="260" y1="10" x2="260" y2="175" stroke="#ddd"/>
+
+  <!-- RIGHT: A''(0) < 0 -->
+  <text x="400" y="18" text-anchor="middle" font-size="13" fill="#dc2626" font-weight="bold">A''(0) &lt; 0 → UNSTABLE</text>
+  <line x1="300" y1="50" x2="500" y2="50" stroke="#999" stroke-width="1"/>
+  <line x1="400" y1="30" x2="400" y2="150" stroke="#999" stroke-width="1"/>
+  <text x="508" y="54" font-size="11" fill="#666">t</text>
+  <text x="385" y="28" font-size="11" fill="#666">A(t)</text>
+  <path d="M 320,140 Q 400,30 480,140" fill="none" stroke="#dc2626" stroke-width="2.5"/>
+  <circle cx="400" cy="50" r="4" fill="#dc2626"/>
+  <text x="408" y="44" font-size="11" fill="#dc2626">A(0)</text>
+  <text x="400" y="172" text-anchor="middle" font-size="11" fill="#dc2626">poked area is lower</text>
+</svg>
+
+<div class="boxed">
+  $$ \text{stable} \;\Longleftrightarrow\; A''(0) \geq 0 \;\text{ for every poke} $$
+</div>
+
+<p>Step 0's job: <strong>compute $A''(0)$.</strong></p>
+
+<hr>
+
+<h3 id="s0-area">2. Area Formula for Surfaces of Revolution</h3>
+
+<p>For a surface of revolution with profile $f(z)$ rotated around the $z$-axis:</p>
+<div class="math-display">
+  $$ \text{Area} = 2\pi \int_{-d}^{d} f(z)\,\sqrt{1 + f'(z)^2}\; dz $$
+</div>
+
+<div class="question">
+  <div class="question-title">Where does this formula come from?</div>
+
+  <p>Slice the catenoid into thin rings. Each ring is a tiny rectangle when unrolled:</p>
+
+  <p style="margin: 0.8rem 0 0.3rem;"><strong>① Width = circle perimeter:</strong></p>
+  <div class="math-display">$$ \text{width} = 2\pi \cdot f(z) \quad\text{(perimeter of circle with radius } f(z)\text{)} $$</div>
+
+  <p style="margin: 0.8rem 0 0.3rem;"><strong>② Height = slant of tilted band.</strong> Why not just $dz$? Because a step $dz$ up also shifts the radius outward by $df$:</p>
+  <div class="math-display">
+    $$ f'(z) \;=\; \frac{df}{dz} \quad\Longrightarrow\quad df \;=\; f'(z)\,dz $$
+  </div>
+  <p style="margin: 0.3rem 0 0.3rem; color: var(--muted); font-size: 0.9rem;">(Definition of derivative, rearranged.)</p>
+
+  <p style="margin: 0.8rem 0 0.3rem;">Pythagoras on the right triangle with legs $dz$ and $df$:</p>
+  <div class="math-display">
+    $$ \text{slant} \;=\; \sqrt{dz^2 + df^2} \;=\; \sqrt{dz^2 + (f'(z)\,dz)^2} \;=\; \sqrt{1+f'(z)^2}\;dz $$
+  </div>
+
+  <svg viewBox="0 0 620 260" style="display: block; margin: 1rem auto; width: 100%; max-width: 640px;">
+    <!-- ========= LEFT PANEL: the ring ========= -->
+    <text x="140" y="22" text-anchor="middle" font-size="13" fill="#333" font-weight="bold">① Top-down view of one ring</text>
+
+    <!-- ring (circle) -->
+    <circle cx="140" cy="130" r="70" fill="none" stroke="#16a34a" stroke-width="2.5"/>
+    <!-- centre dot -->
+    <circle cx="140" cy="130" r="2.5" fill="#666"/>
+    <!-- radius line -->
+    <line x1="140" y1="130" x2="210" y2="130" stroke="#16a34a" stroke-width="2"/>
+    <text x="170" y="125" text-anchor="middle" font-size="13" fill="#16a34a" font-style="italic">f(z)</text>
+    <text x="170" y="140" text-anchor="middle" font-size="11" fill="#666">radius</text>
+
+    <!-- circumference label -->
+    <text x="140" y="225" text-anchor="middle" font-size="13" fill="#16a34a" font-weight="bold">circumference = 2π · f(z)</text>
+
+    <!-- divider -->
+    <line x1="305" y1="20" x2="305" y2="240" stroke="#ddd" stroke-width="1"/>
+
+    <!-- ========= RIGHT PANEL: the right triangle ========= -->
+    <text x="470" y="22" text-anchor="middle" font-size="13" fill="#333" font-weight="bold">② Side view — walking up the tilted surface</text>
+
+    <!-- profile curve (faint, for context) -->
+    <path d="M 360,200 Q 440,180 560,80" fill="none" stroke="#2d5ba4" stroke-width="2" opacity="0.35"/>
+    <text x="565" y="80" font-size="11" fill="#2d5ba4" opacity="0.7">f(z)</text>
+
+    <!-- right triangle (zoomed segment of the curve) -->
+    <!-- horizontal leg: dz -->
+    <line x1="400" y1="180" x2="500" y2="180" stroke="#666" stroke-width="2.5"/>
+    <text x="450" y="200" text-anchor="middle" font-size="13" fill="#666">dz</text>
+    <text x="450" y="215" text-anchor="middle" font-size="10" fill="#888" font-style="italic">step in z</text>
+
+    <!-- vertical leg: df = f'(z) dz -->
+    <line x1="500" y1="180" x2="500" y2="110" stroke="#666" stroke-width="2.5"/>
+    <text x="510" y="148" font-size="13" fill="#666">f'(z) dz</text>
+    <text x="510" y="163" font-size="10" fill="#888" font-style="italic">radius change</text>
+
+    <!-- hypotenuse: slant -->
+    <line x1="400" y1="180" x2="500" y2="110" stroke="#ea580c" stroke-width="3"/>
+    <text x="420" y="135" font-size="13" fill="#ea580c" font-weight="bold">slant</text>
+
+    <!-- right angle mark -->
+    <path d="M 490,180 L 490,170 L 500,170" fill="none" stroke="#666" stroke-width="1"/>
+
+    <!-- slant formula -->
+    <text x="470" y="240" text-anchor="middle" font-size="13" fill="#ea580c" font-weight="bold">slant = √(dz² + (f'dz)²) = √(1+f'²) dz</text>
+  </svg>
+
+  <p style="margin-top: 1rem;"><strong>Ring area = width × height:</strong></p>
+  <div class="math-display">
+    $$ dA \;=\; \underbrace{2\pi f(z)}_{①} \;\times\; \underbrace{\sqrt{1+f'(z)^2}\;dz}_{②} $$
+  </div>
+
+  <p><strong>Total = sum all rings:</strong></p>
+  <div class="math-display">
+    $$ A \;=\; \int_{-d}^{d} dA \;=\; 2\pi\int_{-d}^{d} f(z)\,\sqrt{1+f'(z)^2}\,dz $$
+  </div>
+</div>
+
+<p>For the <strong>catenoid</strong>, the profile is:</p>
+<div class="math-display">
+  $$ f(z) = R\cosh\!\left(\frac{z}{R}\right) $$
+</div>
+
+<p>Its derivative:</p>
+<div class="math-display">
+  $$ f'(z) = \frac{d}{dz}\left[R\cosh\left(\frac{z}{R}\right)\right] = R \cdot \sinh\left(\frac{z}{R}\right) \cdot \frac{1}{R} = \sinh\left(\frac{z}{R}\right) $$
+</div>
+
+<p>The square root simplifies using $1 + \sinh^2(x) = \cosh^2(x)$:</p>
+<div class="math-display">
+  $$ \sqrt{1 + f'(z)^2} = \sqrt{1 + \sinh^2\left(\frac{z}{R}\right)} = \cosh\left(\frac{z}{R}\right) $$
+</div>
+
+<div class="boxed">
+  <strong>Notation:</strong> Define shorthand <strong>$s(z)$</strong> for the arc length factor:
+  $$ s(z) \;=\; \sqrt{1 + f'(z)^2} \;=\; \cosh\left(\frac{z}{R}\right) $$
+  <p style="margin-top: 0.5rem; color: var(--muted);">This $s$ appears throughout the Taylor expansion below.</p>
+</div>
+
+<hr>
+
+<h3 id="s0-perturb">3. Perturbation Setup</h3>
+
+<p>Wiggle the surface by pushing the radius at each height $z$ by amount $t \cdot \psi(z)$:</p>
+<div class="math-display">
+  $$ f_t(z) = f(z) + t\,\psi(z) $$
+</div>
+
+<p>Boundary conditions (the rings at $z = \pm d$ are fixed):</p>
+<div class="math-display">
+  $$ \psi(-d) = 0 \quad \text{and} \quad \psi(d) = 0 $$
+</div>
+
+<p>The perturbed area is:</p>
+<div class="math-display">
+  $$ A(t) = 2\pi \int_{-d}^{d} (f + t\psi)\,\sqrt{1 + (f' + t\psi')^2}\; dz $$
+</div>
+
+<hr>
+
+<h3 id="s0-taylor">4. Taylor Expansion — Where is A(0), A'(0), A''(0)?</h3>
+
+<div class="question">
+  <div class="question-title">Question: Why expand to $t^2$? Where are A(0) and A'(0)?</div>
+  <p>The Taylor series of $A(t)$ around $t=0$ is:</p>
+  $$ A(t) = A(0) + t\,A'(0) + \frac{t^2}{2}\,A''(0) + O(t^3) $$
+  <p>We expand to $t^2$ because:</p>
+  <ul>
+    <li><strong>$A(0)$</strong> = original area (just a number, doesn't tell us about stability)</li>
+    <li><strong>$A'(0) = 0$</strong> because the catenoid is a minimal surface (critical point of area)</li>
+    <li><strong>$A''(0)$</strong> = the first non-trivial term — this determines stability!</li>
+  </ul>
+</div>
+
+<p>Write the integrand as $G(t,z) = (f + t\psi) \cdot \sqrt{1 + (f' + t\psi')^2}$.</p>
+
+<p>Expand $G$ in powers of $t$: $G = G_0 + t\,G_1 + t^2\,G_2 + O(t^3)$.</p>
+
+<p>Then $A(t) = 2\pi \int (G_0 + tG_1 + t^2 G_2)\,dz$, so:</p>
+
+<div class="boxed">
+  <ul>
+    <li><strong>$A(0) = 2\pi \int G_0\,dz$</strong> — the $t^0$ coefficient</li>
+    <li><strong>$A'(0) = 2\pi \int G_1\,dz$</strong> — the $t^1$ coefficient</li>
+    <li><strong>$A''(0) = 2 \cdot 2\pi \int G_2\,dz$</strong> — from the $t^2$ term in Taylor series</li>
+  </ul>
+</div>
+
+<h3>Step 4a: Expand the square root</h3>
+
+<p>Inside the square root:</p>
+<div class="math-display">
+  $$ 1 + (f' + t\psi')^2 = 1 + f'^2 + 2tf'\psi' + t^2\psi'^2 $$
+</div>
+
+<p>Since $s^2 = 1 + f'^2$:</p>
+<div class="math-display">
+  $$ = s^2 + 2tf'\psi' + t^2\psi'^2 = s^2\left(1 + \frac{2tf'\psi'}{s^2} + \frac{t^2\psi'^2}{s^2}\right) $$
+</div>
+
+<p>Factor out $s$ from the square root:</p>
+<div class="math-display">
+  $$ \sqrt{\cdots} = s\,\sqrt{1 + \varepsilon} \quad \text{where } \varepsilon = \frac{2tf'\psi'}{s^2} + \frac{t^2\psi'^2}{s^2} $$
+</div>
+
+<p>Taylor expand $\sqrt{1+\varepsilon} \approx 1 + \frac{\varepsilon}{2} - \frac{\varepsilon^2}{8} + \cdots$</p>
+
+<p>Computing to order $t^2$:</p>
+<div class="math-display">
+  $$ \frac{\varepsilon}{2} = \frac{tf'\psi'}{s^2} + \frac{t^2\psi'^2}{2s^2} $$
+</div>
+<div class="math-display">
+  $$ \frac{\varepsilon^2}{8} = \frac{1}{8}\left(\frac{2tf'\psi'}{s^2}\right)^2 + O(t^3) = \frac{t^2f'^2\psi'^2}{2s^4} + O(t^3) $$
+</div>
+
+<p>So:</p>
+<div class="math-display">
+  $$ \sqrt{1+\varepsilon} \approx 1 + \frac{tf'\psi'}{s^2} + t^2\left(\frac{\psi'^2}{2s^2} - \frac{f'^2\psi'^2}{2s^4}\right) $$
+</div>
+
+<p>The $t^2$ bracket simplifies (using $s^2 - f'^2 = 1$):</p>
+<div class="math-display">
+  $$ \frac{\psi'^2}{2s^2} - \frac{f'^2\psi'^2}{2s^4} = \frac{\psi'^2}{2s^4}(s^2 - f'^2) = \frac{\psi'^2}{2s^4} $$
+</div>
+
+<p>Multiply by $s$:</p>
+<div class="math-display">
+  $$ \text{square root} = s + \frac{tf'\psi'}{s} + \frac{t^2\psi'^2}{2s^3} + O(t^3) $$
+</div>
+
+<h3>Step 4b: Multiply out $(f + t\psi) \times (\text{square root})$</h3>
+
+<div class="math-display">
+  $$ G = (f + t\psi)\left(s + \frac{tf'\psi'}{s} + \frac{t^2\psi'^2}{2s^3}\right) $$
+</div>
+
+<p>Collecting powers of $t$:</p>
+<div class="math-display">
+  $$ \begin{aligned}
+  G_0 &= f \cdot s \\[6pt]
+  G_1 &= f \cdot \frac{f'\psi'}{s} + \psi \cdot s = \frac{ff'\psi'}{s} + \psi s \\[6pt]
+  G_2 &= f \cdot \frac{\psi'^2}{2s^3} + \psi \cdot \frac{f'\psi'}{s} = \frac{f\psi'^2}{2s^3} + \frac{\psi f'\psi'}{s}
+  \end{aligned} $$
+</div>
+
+<h3>Step 4c: Read off A(0), A'(0), A''(0)</h3>
+
+<div class="result">
+  <div class="result-title">The three terms explicitly:</div>
+  <p><strong>$A(0) = 2\pi \int_{-d}^{d} f\,s\,dz$</strong> — the original catenoid area</p>
+  <p><strong>$A'(0) = 2\pi \int_{-d}^{d} \left(\frac{ff'\psi'}{s} + \psi s\right)dz = 0$</strong> — vanishes because catenoid is minimal</p>
+  <p><strong>$A''(0) = 2\pi \int_{-d}^{d} \left(\frac{f}{s^3}\psi'^2 + \frac{2f'}{s}\psi\psi'\right)dz$</strong> — this is what we need!</p>
+</div>
+
+<hr>
+
+<h3 id="s0-catenoid">5. Substitute Catenoid Values</h3>
+
+<p>Plug in $f = R\cosh(z/R)$, $f' = \sinh(z/R)$, $s = \cosh(z/R)$:</p>
+
+<p><strong>First coefficient:</strong></p>
+<div class="math-display">
+  $$ \frac{f}{s^3} = \frac{R\cosh(z/R)}{\cosh^3(z/R)} = \frac{R}{\cosh^2(z/R)} $$
+</div>
+
+<p><strong>Second coefficient:</strong></p>
+<div class="math-display">
+  $$ \frac{f'}{s} = \frac{\sinh(z/R)}{\cosh(z/R)} = \tanh\left(\frac{z}{R}\right) $$
+</div>
+
+<p>So:</p>
+<div class="math-display">
+  $$ A''(0) = 2\pi \int_{-d}^{d}\left(\frac{R}{\cosh^2(z/R)}\psi'^2 + 2\tanh\left(\frac{z}{R}\right)\psi\psi'\right)dz $$
+</div>
+
+<hr>
+
+<h3 id="s0-ibp1">6. Integration by Parts (First Round)</h3>
+
+<p>The second term has $\psi\psi'$. Notice $2\psi\psi' = (\psi^2)'$ by chain rule.</p>
+
+<p>So:</p>
+<div class="math-display">
+  $$ \int_{-d}^{d} \tanh\left(\frac{z}{R}\right) \cdot (\psi^2)'\,dz $$
+</div>
+
+<p>Integration by parts with $u = \tanh(z/R)$, $v = \psi^2$:</p>
+<div class="math-display">
+  $$ = \left[\tanh\left(\frac{z}{R}\right) \cdot \psi^2\right]_{-d}^{d} - \int_{-d}^{d} \frac{d}{dz}\left[\tanh\left(\frac{z}{R}\right)\right] \cdot \psi^2\,dz $$
+</div>
+
+<p><strong>Boundary term:</strong> $\psi(\pm d) = 0$, so $[\tanh \cdot \psi^2]_{-d}^{d} = 0$.</p>
+
+<p><strong>Derivative of tanh:</strong></p>
+<div class="math-display">
+  $$ \frac{d}{dz}\left[\tanh\left(\frac{z}{R}\right)\right] = \frac{1}{R}\text{sech}^2\left(\frac{z}{R}\right) = \frac{1}{R\cosh^2(z/R)} $$
+</div>
+
+<p>So the second term becomes:</p>
+<div class="math-display">
+  $$ \int \tanh \cdot (\psi^2)' = -\int_{-d}^{d} \frac{\psi^2}{R\cosh^2(z/R)}\,dz $$
+</div>
+
+<p><strong>Combining both terms:</strong></p>
+<div class="math-display">
+  $$ A''(0) = 2\pi \int_{-d}^{d}\left(\frac{R\psi'^2}{\cosh^2(z/R)} - \frac{\psi^2}{R\cosh^2(z/R)}\right)dz $$
+</div>
+
+<p>Factor out $1/\cosh^2$:</p>
+<div class="boxed">
+  $$ A''(0) = 2\pi \int_{-d}^{d} \frac{1}{\cosh^2(z/R)}\left(R\psi'^2 - \frac{\psi^2}{R}\right)dz $$
+</div>
+
+<hr>
+
+<h3 id="s0-sub">7. Substitution to Simplify</h3>
+
+<p>The formula has $\frac{1}{\cosh^2}$ in front. To absorb this weight, define:</p>
+
+<div class="result">
+  <div class="result-title">Substitution</div>
+  $$ \phi(z) = \frac{\psi(z)}{\cosh(z/R)} \quad \Longleftrightarrow \quad \psi(z) = \phi(z)\cosh\left(\frac{z}{R}\right) $$
+</div>
+
+<p>Now $\psi^2 = \phi^2 \cosh^2$, so when divided by $\cosh^2$, we get $\phi^2$ — the weight is absorbed.</p>
+
+<hr>
+
+<h3 id="s0-calc">8. Calculations</h3>
+
+<p>We need to substitute $\psi = \phi\cosh(z/R)$ into the boxed formula.</p>
+
+<h3>Step 8a: Compute $\psi'$</h3>
+<p>By product rule:</p>
+<div class="math-display">
+  $$ \psi' = \phi'\cosh\left(\frac{z}{R}\right) + \phi \cdot \frac{1}{R}\sinh\left(\frac{z}{R}\right) $$
+</div>
+
+<h3>Step 8b: Compute $\psi'^2$</h3>
+<p>Square it (writing $\cosh$ for $\cosh(z/R)$, $\sinh$ for $\sinh(z/R)$):</p>
+<div class="math-display">
+  $$ \psi'^2 = \phi'^2\cosh^2 + 2\phi'\phi \cdot \frac{\cosh \cdot \sinh}{R} + \phi^2 \cdot \frac{\sinh^2}{R^2} $$
+</div>
+
+<h3>Step 8c: Compute $R\psi'^2/\cosh^2$</h3>
+<p>Divide each term by $\cosh^2$ and multiply by $R$:</p>
+<div class="math-display">
+  $$ \begin{aligned}
+  \frac{R\psi'^2}{\cosh^2} &= R\phi'^2 + \frac{2\phi'\phi\sinh}{\cosh} + \frac{\phi^2\sinh^2}{R\cosh^2} \\[6pt]
+  &= R\phi'^2 + 2\phi'\phi\tanh\left(\frac{z}{R}\right) + \frac{\phi^2\tanh^2(z/R)}{R}
+  \end{aligned} $$
+</div>
+
+<h3>Step 8d: Compute $\psi^2/(R\cosh^2)$</h3>
+<div class="math-display">
+  $$ \frac{\psi^2}{R\cosh^2} = \frac{\phi^2\cosh^2}{R\cosh^2} = \frac{\phi^2}{R} $$
+</div>
+
+<h3>Step 8e: Subtract</h3>
+<div class="math-display">
+  $$ \begin{aligned}
+  \frac{R\psi'^2}{\cosh^2} - \frac{\psi^2}{R\cosh^2} &= R\phi'^2 + 2\phi'\phi\tanh + \frac{\phi^2\tanh^2}{R} - \frac{\phi^2}{R} \\[6pt]
+  &= R\phi'^2 + 2\phi'\phi\tanh + \frac{\phi^2}{R}(\tanh^2 - 1)
+  \end{aligned} $$
+</div>
+
+<p>Using identity $\tanh^2 - 1 = -\text{sech}^2 = -1/\cosh^2$:</p>
+<div class="math-display">
+  $$ = R\phi'^2 + 2\phi'\phi\tanh\left(\frac{z}{R}\right) - \frac{\phi^2}{R\cosh^2(z/R)} $$
+</div>
+
+<p>So:</p>
+<div class="math-display">
+  $$ A''(0) = 2\pi \int_{-d}^{d}\left(R\phi'^2 + 2\phi'\phi\tanh\left(\frac{z}{R}\right) - \frac{\phi^2}{R\cosh^2(z/R)}\right)dz $$
+</div>
+
+<hr>
+
+<h3 id="s0-ibp2">9. Final Integration by Parts</h3>
+
+<h3>Step 9a: Handle the middle term</h3>
+<p>Again, $2\phi'\phi = (\phi^2)'$. Same IBP as before:</p>
+<div class="math-display">
+  $$ \int \tanh\left(\frac{z}{R}\right)(\phi^2)'\,dz = \underbrace{[\tanh \cdot \phi^2]_{-d}^{d}}_{=0} - \int \frac{\phi^2}{R\cosh^2}\,dz $$
+</div>
+
+<p>This contributes $-\int \phi^2/(R\cosh^2)\,dz$, combining with the existing $-\int \phi^2/(R\cosh^2)\,dz$:</p>
+<div class="math-display">
+  $$ A''(0) = 2\pi \int_{-d}^{d}\left(R\phi'^2 - \frac{2\phi^2}{R\cosh^2(z/R)}\right)dz $$
+</div>
+
+<p>Factor out $R$:</p>
+<div class="math-display">
+  $$ A''(0) = 2\pi R \int_{-d}^{d}\left(\phi'^2 - \frac{2\phi^2}{R^2\cosh^2(z/R)}\right)dz $$
+</div>
+
+<h3>Step 9b: Convert $\phi'^2$ to get the $\int\phi(L\phi)$ form</h3>
+
+<p>Use IBP on $\int\phi'^2$. Let $u = \phi$, integrate $\phi''$:</p>
+<div class="math-display">
+  $$ \int_{-d}^{d}\phi \cdot \phi''\,dz = [\phi \cdot \phi']_{-d}^{d} - \int_{-d}^{d}\phi' \cdot \phi'\,dz $$
+</div>
+
+<p>Rearranging (boundary term = 0 since $\phi(\pm d) = 0$):</p>
+<div class="math-display">
+  $$ \int_{-d}^{d}\phi'^2\,dz = -\int_{-d}^{d}\phi\,\phi''\,dz $$
+</div>
+
+<p>Substitute back:</p>
+<div class="math-display">
+  $$ A''(0) = 2\pi R \int_{-d}^{d}\left(-\phi\phi'' - \frac{2\phi^2}{R^2\cosh^2(z/R)}\right)dz $$
+</div>
+
+<p>Factor out $\phi$:</p>
+<div class="math-display">
+  $$ A''(0) = 2\pi R \int_{-d}^{d} \phi(z)\left[-\phi''(z) - \frac{2\phi(z)}{R^2\cosh^2(z/R)}\right]dz $$
+</div>
+
+<hr>
+
+<h3 id="s0-result">10. Final Result: The Jacobi Operator</h3>
+
+<div class="result">
+  <div class="result-title">Second Variation Formula</div>
+  $$ A''(0) = 2\pi R \int_{-d}^{d} \phi(z)\,(L\phi)(z)\,dz $$
+</div>
+
+<p>where the <strong>Jacobi operator</strong> $L$ is:</p>
+
+<div class="result">
+  <div class="result-title">Jacobi Operator</div>
+  $$ (L\phi)(z) = -\phi''(z) - \frac{2}{R^2\cosh^2(z/R)}\,\phi(z) $$
+</div>
+
+<h3>What does $L$ do?</h3>
+<ul>
+  <li><strong>$-\phi''$</strong>: Penalizes sharp wiggles (smooth perturbations cost less area)</li>
+  <li><strong>$-\frac{2}{R^2\cosh^2}\phi$</strong>: Curvature term — strongest at neck ($z=0$), encourages collapse</li>
+</ul>
+
+<p><strong>Stability criterion:</strong> Catenoid is stable iff $\int\phi(L\phi)\,dz \geq 0$ for all valid $\phi$.</p>
+
+<hr>
+<p style="text-align: center; color: var(--muted); margin-top: 2rem;">End of Step 0</p>
+
+<hr style="border-top: 3px solid var(--accent); margin: 3rem 0;">
+
+<h2 id="step1" style="font-size: 1.5rem; border-bottom: 3px solid var(--accent);">Step 1 — Solve the Jacobi ODE</h2>
+
+<!-- ============ 1. Goal ============ -->
+<h3 id="s1-goal">1. Goal</h3>
+
+<p>From Step 0:</p>
+<div class="math-display">
+  $$ A''(0) = 2\pi R \int_{-d}^{d}\phi(L\phi)\,dz, \qquad (L\phi)(z) = -\phi''(z) - \frac{2}{R^2\cosh^2(z/R)}\,\phi(z) $$
+</div>
+
+<p>Step 1 goal: find $h$ solving</p>
+<div class="math-display">
+  $$ Lh = 0 \quad\text{(the Jacobi equation)} $$
+</div>
+<p>We need a specific $h$ here because Step 3 will use it to prove $A''(0) \geq 0$.</p>
+
+<hr>
+
+<!-- ============ 2. Simplify ============ -->
+<h3 id="s1-ode">2. Simplify the ODE</h3>
+
+<p>Expand $Lh = 0$:</p>
+<div class="math-display">
+  $$ h''(z) + \frac{2}{R^2\cosh^2(z/R)}\,h(z) = 0 $$
+</div>
+
+<p>Let $u = z/R$, so $du/dz = 1/R$. Chain rule for the derivatives:</p>
+<div class="math-display">
+  $$ \frac{dh}{dz} \;=\; \frac{dh}{du}\cdot\frac{du}{dz} \;=\; \frac{1}{R}\,\frac{dh}{du} $$
+</div>
+<div class="math-display">
+  $$ \frac{d^2 h}{dz^2} \;=\; \frac{d}{dz}\!\left(\frac{1}{R}\,\frac{dh}{du}\right) \;=\; \frac{1}{R}\cdot\frac{d^2 h}{du^2}\cdot\frac{du}{dz} \;=\; \frac{1}{R^2}\,\frac{d^2 h}{du^2} $$
+</div>
+
+<p>Substitute and use $\cosh(z/R) = \cosh u$:</p>
+<div class="math-display">
+  $$ \frac{1}{R^2}\,h''(u) \;+\; \frac{2}{R^2\cosh^2 u}\,h(u) \;=\; 0 $$
+</div>
+
+<p>Multiply both sides by $R^2$:</p>
+<div class="boxed">
+  $$ h''(u) + \frac{2}{\cosh^2 u}\,h(u) = 0 $$
+</div>
+<p style="color: var(--muted); font-size: 0.9rem;">Cleaner — $R$ is gone.</p>
+
+<hr>
+
+<!-- ============ 3. Two solutions from symmetry ============ -->
+<h3 id="s1-solutions">3. Where does $h$ come from?</h3>
+
+<h4>Reading this section in plain English first</h4>
+
+<p>Our job here is to <strong>find a function $h$ with $Lh = 0$</strong>. Nothing fancy — just produce such an $h$. But before guessing randomly, let's understand what that equation <em>means</em>, because the meaning hands us the answer for free.</p>
+
+<div class="boxed">
+  <p style="margin: 0;"><strong>Bottom line (read this twice):</strong> $\,Lh = 0\,$ is exactly the condition "<em>if I push the catenoid in the direction $h$ by a tiny amount $t$, the result is still a minimal surface — to leading order in $t$.</em>"</p>
+</div>
+
+<p>So "find $h$ with $Lh = 0$" really asks: <strong>in which directions can you nudge the catenoid without leaving the family of minimal surfaces?</strong> Once you see that, the answer is obvious — wiggle the catenoid's own parameters. That's the entire trick of §3.</p>
+
+<hr style="border-top: 1px dashed var(--border); margin: 1.5rem 0;">
+
+<h4>Why $L\psi = 0$ means "the perturbation doesn't break minimality"</h4>
+
+<p>Let's derive this cleanly so it's not magic.</p>
+
+<p><strong>Setup.</strong> A surface with profile $f$ is called <em>minimal</em> iff its mean curvature is zero: $H(f) = 0$. For a surface of revolution $f(z)$, $H(f)$ is some expression built from $f$, $f'$, $f''$. The catenoid $f_0(z) = R\cosh(z/R)$ makes $H(f_0) = 0$.</p>
+
+<p><strong>Perturb it.</strong> Push the catenoid in some direction $\psi$ by a small amount $t$:</p>
+<div class="math-display">
+  $$ f_0 \;\longrightarrow\; f_0 + t\,\psi. $$
+</div>
+
+<p><strong>Ask: is the perturbed surface still minimal?</strong> Compute its mean curvature and Taylor-expand in $t$:</p>
+<div class="math-display">
+  $$ H(f_0 + t\psi) \;=\; \underbrace{H(f_0)}_{=\,0 \text{ because } f_0 \text{ is minimal}} \;+\; t\cdot \big[\text{first-order piece}\big] \;+\; t^2\cdot[\cdots] \;+\; \cdots $$
+</div>
+
+<p>The first-order piece — the linear part of $H$ in the direction $\psi$ — is <strong>exactly what we call $L\psi$</strong>. This is not a coincidence: $L$ was defined to be the linearization of $H$ around $f_0$. So</p>
+<div class="math-display">
+  $$ H(f_0 + t\psi) \;=\; t\cdot L\psi \;+\; O(t^2). $$
+</div>
+
+<p><strong>Now the punchline.</strong> For the perturbed surface to still be minimal — i.e. $H(f_0 + t\psi) = 0$ — we need the right-hand side to vanish. Ignoring $O(t^2)$, that leaves</p>
+<div class="math-display" style="font-size: 1.2rem;">
+  $$ \boxed{\;L\psi = 0 \;\Longleftrightarrow\; \text{pushing by }\psi\text{ keeps the surface minimal to first order in }t.\;} $$
+</div>
+
+<p>That's the content. $Lh = 0$ is not a random ODE — it's literally the equation "$h$ is an allowed perturbation direction that preserves minimality to leading order."</p>
+
+<hr style="border-top: 1px dashed var(--border); margin: 1.5rem 0;">
+
+<h4>The lazy way to find such an $h$: wiggle the catenoid's own parameters</h4>
+
+<p>Finding $\psi$ that solves $L\psi = 0$ sounds hard if you attack it as an ODE. But here's the free lunch:</p>
+
+<div class="result">
+  <div class="result-title">Observation</div>
+  <p>If we can produce a $\psi$ such that $f_0 + t\psi$ is <em>actually, genuinely</em> minimal for every small $t$ (not just approximately), then it's in particular minimal to first order in $t$ — so $L\psi = 0$ automatically, no ODE work needed.</p>
+</div>
+
+<p>Where do such $\psi$ come from? <strong>The catenoid family itself.</strong> The general catenoid has two free parameters:</p>
+<div class="math-display">
+  $$ f(z;\, z_0,\, R) \;=\; R\cosh\!\left(\frac{z - z_0}{R}\right). $$
+</div>
+<p>For <em>every</em> choice of $(z_0, R)$, this is a minimal surface. So if we hold one parameter fixed and wiggle the other, we trace out a whole 1-parameter family of minimal surfaces — and the tangent direction of that wiggle is a ready-made $\psi$ with $L\psi = 0$.</p>
+
+<h4>Two natural wiggles to try</h4>
+
+<div class="math-display">
+  $$ \begin{array}{l|c|c}
+  & \textbf{Slide: } z_0 \to z_0 + t & \textbf{Scale: } R \to R + t \\ \hline
+  \text{What it does to the catenoid} & \text{shifts it up by }t & \text{makes it fatter by }t \\
+  \text{Result still minimal for every }t? & \checkmark \text{ (same shape, moved)} & \checkmark \text{ (same family, different }R\text{)} \\
+  \text{So }L\psi = 0? & \checkmark \text{ automatically} & \checkmark \text{ automatically} \\
+  \text{Corresponding }\psi & \dfrac{\partial f}{\partial z_0}\Big|_{z_0=0} & \dfrac{\partial f}{\partial R}
+  \end{array} $$
+</div>
+
+<p>Each wiggle gives a $\psi$. Then we recover $h$ by the Step 0 substitution:</p>
+<div class="boxed">
+  $$ h(z) \;=\; \frac{\psi(z)}{\cosh(z/R)}. $$
+</div>
+
+<p>The next two subsections compute $\psi$ and $h$ for each wiggle — just derivatives, no tricks.</p>
+
+<h4>Solution 1: slide the catenoid</h4>
+
+<svg width="400" height="140" style="display: block; margin: 1rem auto;">
+  <path d="M 80,110 Q 100,70 100,60 Q 100,50 80,10" stroke="#2d5ba4" stroke-width="2" fill="none"/>
+  <path d="M 120,110 Q 100,70 100,60 Q 100,50 120,10" stroke="#2d5ba4" stroke-width="2" fill="none"/>
+  <text x="100" y="130" text-anchor="middle" font-size="12" fill="#666">Original</text>
+  <line x1="160" y1="60" x2="200" y2="60" stroke="#666" stroke-width="1.5" marker-end="url(#arr-slide)"/>
+  <text x="180" y="52" text-anchor="middle" font-size="11" fill="#666">slide by ε</text>
+  <path d="M 240,100 Q 260,60 260,50 Q 260,40 240,0" stroke="#16a34a" stroke-width="2" fill="none"/>
+  <path d="M 280,100 Q 260,60 260,50 Q 260,40 280,0" stroke="#16a34a" stroke-width="2" fill="none"/>
+  <text x="260" y="130" text-anchor="middle" font-size="12" fill="#666">Shifted (still minimal)</text>
+  <defs>
+    <marker id="arr-slide" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#666"/>
+    </marker>
+  </defs>
+</svg>
+
+<p><strong>Step 1a — new profile after sliding by $\epsilon$.</strong> Sliding the catenoid up by $\epsilon$ means: the new height-$z$ cross-section is what used to be the height-$(z+\epsilon)$ cross-section:</p>
+<div class="math-display">
+  $$ f_{\text{new}}(z) \;=\; f(z+\epsilon) $$
+</div>
+
+<p><strong>Step 1b — Taylor expand to first order in $\epsilon$:</strong></p>
+<div class="math-display">
+  $$ f_{\text{new}}(z) \;\approx\; f(z) \;+\; \epsilon\,f'(z) $$
+</div>
+
+<p><strong>Step 1c — identify $\psi$.</strong> Match against Step 0's definition $f_{\text{new}}(z) = f(z) + t\,\psi(z)$ (with $t = \epsilon$):</p>
+<div class="math-display">
+  $$ \psi(z) \;=\; f'(z) \;=\; \sinh(z/R) \;=\; \sinh u $$
+</div>
+<p style="color: var(--muted); font-size: 0.9rem;">(We computed $f'(z) = \sinh(z/R)$ in Step 0, Section 2. Writing $u = z/R$ for short.)</p>
+
+<p><strong>Step 1d — divide by $\cosh u$ to get $h_1$:</strong></p>
+<div class="math-display">
+  $$ h_1(u) \;=\; \frac{\psi(z)}{\cosh u} \;=\; \frac{\sinh u}{\cosh u} $$
+</div>
+<div class="boxed">
+  $$ h_1(u) \;=\; \tanh u $$
+</div>
+
+<h4>Solution 2: scale the catenoid</h4>
+
+<svg width="400" height="140" style="display: block; margin: 1rem auto;">
+  <path d="M 85,110 Q 100,75 100,60 Q 100,45 85,10" stroke="#2d5ba4" stroke-width="2" fill="none"/>
+  <path d="M 115,110 Q 100,75 100,60 Q 100,45 115,10" stroke="#2d5ba4" stroke-width="2" fill="none"/>
+  <text x="100" y="130" text-anchor="middle" font-size="12" fill="#666">Original R</text>
+  <line x1="150" y1="60" x2="190" y2="60" stroke="#666" stroke-width="1.5" marker-end="url(#arr-slide)"/>
+  <text x="170" y="52" text-anchor="middle" font-size="11" fill="#666">R → R+ε</text>
+  <path d="M 230,110 Q 260,70 260,60 Q 260,50 230,10" stroke="#16a34a" stroke-width="2" fill="none"/>
+  <path d="M 290,110 Q 260,70 260,60 Q 260,50 290,10" stroke="#16a34a" stroke-width="2" fill="none"/>
+  <text x="260" y="130" text-anchor="middle" font-size="12" fill="#666">Bigger (still minimal)</text>
+</svg>
+
+<p><strong>Step 2a — new profile after scaling $R \to R + \epsilon$:</strong></p>
+<div class="math-display">
+  $$ f_{\text{new}}(z) \;=\; (R+\epsilon)\cosh\!\left(\frac{z}{R+\epsilon}\right) $$
+</div>
+
+<p><strong>Step 2b — Taylor expand to first order in $\epsilon$.</strong> Treat $R$ as the variable, $z$ fixed:</p>
+<div class="math-display">
+  $$ f_{\text{new}}(z) \;\approx\; f(z) \;+\; \epsilon\,\frac{\partial f}{\partial R} $$
+</div>
+
+<p>Product rule on $f = R\cosh(z/R)$. Two pieces:</p>
+<div class="math-display">
+  $$ \frac{\partial f}{\partial R} \;=\; \underbrace{\cosh\!\left(\frac{z}{R}\right)}_{\text{from } \partial R/\partial R = 1} \;+\; \underbrace{R\cdot\sinh\!\left(\frac{z}{R}\right)\cdot\left(-\frac{z}{R^2}\right)}_{\text{chain rule on } \cosh(z/R)} $$
+</div>
+
+<p>Simplify:</p>
+<div class="math-display">
+  $$ \frac{\partial f}{\partial R} \;=\; \cosh\!\left(\frac{z}{R}\right) - \frac{z}{R}\sinh\!\left(\frac{z}{R}\right) \;=\; \cosh u - u\sinh u $$
+</div>
+
+<p><strong>Step 2c — identify $\psi$.</strong> Match against $f_{\text{new}}(z) = f(z) + t\,\psi(z)$:</p>
+<div class="math-display">
+  $$ \psi(z) \;=\; \cosh u - u\sinh u $$
+</div>
+
+<p><strong>Step 2d — divide by $\cosh u$ to get $h_2$:</strong></p>
+<div class="math-display">
+  $$ h_2(u) \;=\; \frac{\cosh u - u\sinh u}{\cosh u} \;=\; 1 - u\cdot\frac{\sinh u}{\cosh u} $$
+</div>
+<div class="boxed">
+  $$ h_2(u) \;=\; 1 - u\tanh u $$
+</div>
+
+<hr>
+
+<!-- ============ 4. Verify ============ -->
+<h3 id="s1-verify">4. Verify</h3>
+
+<p>Plug each into $h'' + (2/\cosh^2 u)\,h = 0$.</p>
+
+<p><strong>$h_1 = \tanh u$:</strong></p>
+<div class="math-display">
+  $$ h_1'' = -\frac{2\tanh u}{\cosh^2 u} \;\Rightarrow\; h_1'' + \frac{2}{\cosh^2 u}h_1 = 0 \;\checkmark $$
+</div>
+
+<p><strong>$h_2 = 1 - u\tanh u$:</strong></p>
+<div class="math-display">
+  $$ h_2'' = -\frac{2}{\cosh^2 u}\,h_2 \;\Rightarrow\; h_2'' + \frac{2}{\cosh^2 u}h_2 = 0 \;\checkmark $$
+</div>
+
+<hr>
+
+<!-- ============ 5. Pick ============ -->
+<h3 id="s1-choice">5. Pick the right one</h3>
+
+<p>Step 3 needs $h$ to be <strong>strictly positive</strong> on $[-d,d]$.</p>
+
+<div class="math-display">
+  $$ \begin{array}{l|c|c|c}
+  & \text{parity} & h(0) & \text{verdict} \\ \hline
+  h_1 = \tanh u & \text{odd} & 0 & \text{zero at center — no good} \\
+  h_2 = 1 - u\tanh u & \text{even} & 1 & \text{positive at center — KEEP}
+  \end{array} $$
+</div>
+
+<div class="result">
+  <div class="result-title">The Jacobi field we'll use</div>
+  $$ h(z) \;=\; 1 - \frac{z}{R}\tanh\!\left(\frac{z}{R}\right) $$
+</div>
+
+<p>Satisfies $Lh = 0$, even, $h(0) = 1 > 0$. <strong>Step 2 will show $h(z) > 0$ on all of $[-d,d]$</strong> — that's where the "outer" condition enters.</p>
+
+<hr>
+<p style="text-align: center; color: var(--muted); margin-top: 2rem;">End of Step 1</p>
+
+<hr style="border-top: 3px solid var(--accent); margin: 3rem 0;">
+
+<!-- ============================================================= -->
+<!-- ===================== STEP 2 ================================= -->
+<!-- ============================================================= -->
+<h2 id="step2" style="font-size: 1.5rem; border-bottom: 3px solid var(--accent);">Step 2 — Positivity of $h$ on $[-d, d]$</h2>
+
+<!-- ============ 1. Goal ============ -->
+<h3 id="s2-goal">1. Goal</h3>
+
+<p>From Step 1 we have the Jacobi field</p>
+<div class="math-display">
+  $$ h(z) \;=\; 1 - \frac{z}{R}\tanh\!\left(\frac{z}{R}\right), \qquad Lh = 0. $$
+</div>
+
+<p>Step 2 asks:</p>
+
+<div class="boxed">
+  <strong>Claim.</strong> When $R = R_{\text{out}}$ (the outer root of $R\cosh(d/R)=r$),
+  $$ h(z) \;>\; 0 \quad \text{for every } z \in [-d, d]. $$
+</div>
+
+<p>Step 3 will use this to prove $A''(0) \geq 0$ (via the Picone-type identity with weight $h$). So making $h$ strictly positive is exactly the hypothesis Step 3 needs.</p>
+
+<hr>
+
+<!-- ============ 2. Reduce to one variable ============ -->
+<h3 id="s2-reduce">2. Reduce to one variable</h3>
+
+<p>Let $u = z/R$. Then $z \in [-d, d] \;\Longleftrightarrow\; u \in [-d/R,\, d/R]$, and</p>
+<div class="math-display">
+  $$ h(z) \;=\; 1 - u\tanh u \;=:\; \widetilde h(u). $$
+</div>
+
+<p>$\widetilde h$ is <strong>even</strong>: $\widetilde h(-u) = 1 - (-u)\tanh(-u) = 1 - u\tanh u$. So it suffices to prove</p>
+<div class="math-display">
+  $$ \widetilde h(u) > 0 \quad \text{for } u \in [0,\, d/R]. $$
+</div>
+
+<hr>
+
+<!-- ============ 3. Shape of h ============ -->
+<h3 id="s2-shape">3. Shape of $\widetilde h(u) = 1 - u\tanh u$</h3>
+
+<p>Three facts. That's it.</p>
+
+<div class="boxed">
+  <table style="width: 100%; border-collapse: collapse; font-size: 1rem;">
+    <tr style="background: #fff;">
+      <th style="text-align: left; padding: 0.5rem; border-bottom: 2px solid var(--accent);">Fact</th>
+      <th style="text-align: left; padding: 0.5rem; border-bottom: 2px solid var(--accent);">Why</th>
+    </tr>
+    <tr>
+      <td style="padding: 0.5rem;">$\widetilde h(0) = 1$</td>
+      <td style="padding: 0.5rem;">plug in: $1 - 0\cdot 0 = 1$</td>
+    </tr>
+    <tr style="background: #fafaf8;">
+      <td style="padding: 0.5rem;">$\widetilde h$ is strictly decreasing on $[0, \infty)$</td>
+      <td style="padding: 0.5rem;">proved below</td>
+    </tr>
+    <tr>
+      <td style="padding: 0.5rem;">$\widetilde h(u) \to -\infty$</td>
+      <td style="padding: 0.5rem;">for large $u$: $\tanh u \approx 1$, so $\widetilde h \approx 1 - u$</td>
+    </tr>
+  </table>
+</div>
+
+<div class="question">
+  <div class="question-title">Proof that $\widetilde h$ is strictly decreasing on $[0, \infty)$</div>
+
+  <p><strong>Step 1 — Compute the derivative.</strong></p>
+  <p>Differentiate $\widetilde h(u) = 1 - u\tanh u$ using the product rule:</p>
+  $$ \widetilde h'(u) \;=\; -\tanh u \;-\; u\cdot\frac{d}{du}\tanh u \;=\; -\tanh u \;-\; u\,\text{sech}^2 u. $$
+
+  <p><strong>Step 2 — Sign of $\widetilde h'$.</strong></p>
+  <p>Evaluate the two pieces for $u > 0$:</p>
+  <ul style="margin-top: 0.3rem;">
+    <li>$\tanh u > 0$ for all $u > 0$ &nbsp; (since $\sinh u > 0$ and $\cosh u > 0$)</li>
+    <li>$u\,\text{sech}^2 u > 0$ for all $u > 0$ &nbsp; (both factors positive)</li>
+  </ul>
+  <p>Each piece is strictly positive, so their sum is strictly positive, so:</p>
+  $$ \widetilde h'(u) \;=\; -(\text{positive}) - (\text{positive}) \;<\; 0 \quad \text{for every } u > 0. $$
+
+  <p>(At $u = 0$ both pieces vanish, so $\widetilde h'(0) = 0$ — the graph has a horizontal tangent at the start. That's a single isolated point, not an interval, so it doesn't break strict monotonicity — see step 3.)</p>
+
+  <p><strong>Step 3 — Mean Value Theorem finishes it.</strong></p>
+  <p>Pick any $0 \leq u_1 < u_2$. MVT gives some $c \in (u_1, u_2)$ with</p>
+  $$ \widetilde h(u_2) - \widetilde h(u_1) \;=\; \widetilde h'(c)\cdot (u_2 - u_1). $$
+  <p>Since $c > u_1 \geq 0$, we have $c > 0$, so by Step 2, $\widetilde h'(c) < 0$. And $u_2 - u_1 > 0$. Therefore</p>
+  $$ \widetilde h(u_2) - \widetilde h(u_1) \;=\; \underbrace{\widetilde h'(c)}_{<\,0}\cdot\underbrace{(u_2 - u_1)}_{>\,0} \;<\; 0 $$
+  <p>i.e., $\widetilde h(u_2) < \widetilde h(u_1)$. That's exactly the definition of strictly decreasing. $\blacksquare$</p>
+</div>
+
+<h4>Why strict monotonicity matters</h4>
+
+<p>Combined with $\widetilde h(0) = 1 > 0$ and $\widetilde h(u) \to -\infty$:</p>
+
+<div class="result">
+  <div class="result-title">Unique zero crossing</div>
+  <p>By the Intermediate Value Theorem, $\widetilde h$ has at least one zero on $(0, \infty)$. By <em>strict</em> monotonicity, it has at most one (a strictly decreasing function can't cross any horizontal line twice). So exactly one zero — call it $u_c$.</p>
+  <p style="margin-top: 0.5rem;">Strict monotonicity also gives the <strong>sign rule</strong> directly:</p>
+  <ul style="margin-top: 0.3rem;">
+    <li>For $0 \leq u < u_c$: $\widetilde h(u) > \widetilde h(u_c) = 0$, so $\widetilde h(u) > 0$.</li>
+    <li>For $u > u_c$: $\widetilde h(u) < \widetilde h(u_c) = 0$, so $\widetilde h(u) < 0$.</li>
+  </ul>
+  <p>By evenness, the full sign rule on all of $\mathbb{R}$ is: $\;|u| < u_c \iff \widetilde h(u) > 0.$</p>
+</div>
+
+<p><strong>Picture.</strong> Starts at $(0, 1)$ with a flat tangent, then strictly decreases, crosses zero exactly once, keeps going.</p>
+
+<svg viewBox="0 0 520 220" style="display: block; margin: 1rem auto; width: 100%; max-width: 560px;">
+  <!-- shaded regions -->
+  <rect x="70" y="30" width="192" height="81" fill="#16a34a" opacity="0.10"/>
+  <rect x="262" y="111" width="208" height="89" fill="#dc2626" opacity="0.10"/>
+
+  <!-- axes -->
+  <line x1="70" y1="111" x2="485" y2="111" stroke="#666" stroke-width="1"/>
+  <text x="493" y="115" font-size="11" fill="#666">u</text>
+  <line x1="70" y1="30" x2="70" y2="205" stroke="#666" stroke-width="1"/>
+  <text x="48" y="34" font-size="11" fill="#666">h̃(u)</text>
+
+  <!-- just 0 and 1 labels on y -->
+  <line x1="65" y1="52" x2="75" y2="52" stroke="#666"/>
+  <text x="60" y="55" text-anchor="end" font-size="11" fill="#666">1</text>
+  <text x="60" y="115" text-anchor="end" font-size="11" fill="#666">0</text>
+
+  <!-- accurate polyline of h̃(u) -->
+  <polyline points="70,52 118,57 166,71 214,90 262,111 310,132 358,153 406,173 470,198" fill="none" stroke="#2d5ba4" stroke-width="2.5"/>
+
+  <!-- start dot (0,1) -->
+  <circle cx="70" cy="52" r="4" fill="#2d5ba4"/>
+
+  <!-- zero crossing -->
+  <circle cx="262" cy="111" r="5" fill="#dc2626"/>
+  <line x1="262" y1="111" x2="262" y2="195" stroke="#dc2626" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="262" y="208" text-anchor="middle" font-size="12" fill="#dc2626" font-weight="bold">u_c</text>
+
+  <!-- labels -->
+  <text x="166" y="78" text-anchor="middle" font-size="14" fill="#16a34a" font-weight="bold">h̃ &gt; 0</text>
+  <text x="366" y="165" text-anchor="middle" font-size="14" fill="#dc2626" font-weight="bold">h̃ &lt; 0</text>
+</svg>
+
+<p style="text-align: center; font-size: 1.1rem; margin: 1rem 0;"><strong>So: $\widetilde h(u) > 0$ if and only if $|u| < u_c$.</strong></p>
+
+<hr>
+
+<!-- ============ 4. The critical value ============ -->
+<h3 id="s2-uc">4. Naming that crossing point: $u_c$</h3>
+
+<div class="boxed">
+  $u_c$ = the unique positive $u$ where $\widetilde h(u) = 0$, i.e. where:
+  $$ u_c \cdot \tanh(u_c) \;=\; 1. $$
+</div>
+
+<p><strong>Sign rule (the only thing you need to remember):</strong></p>
+
+<div class="math-display" style="font-size: 1.15rem;">
+  $$ |u| < u_c \;\Rightarrow\; \widetilde h(u) > 0 \qquad\qquad |u| > u_c \;\Rightarrow\; \widetilde h(u) < 0 $$
+</div>
+
+<p><strong>Translate back to $z$</strong> using $u = z/R$:</p>
+
+<div class="boxed" style="text-align: center;">
+  $$ h(z) > 0 \text{ everywhere on } [-d, d] \;\Longleftrightarrow\; \frac{d}{R} < u_c $$
+</div>
+
+<p>So the whole job of Step 2 reduces to <strong>one inequality</strong>:</p>
+<div class="math-display" style="font-size: 1.3rem;">
+  $$ \boxed{\;\dfrac{d}{R_{\text{out}}} \;<\; u_c\;} $$
+</div>
+
+<p>That's what §5 proves.</p>
+
+<div class="question">
+  <div class="question-title">One tiny lemma we need in §5</div>
+  <p>The function $u \mapsto u\tanh u$ is <strong>strictly increasing</strong> on $(0, \infty)$. Quick check:</p>
+  $$ \frac{d}{du}(u\tanh u) = \tanh u + u\,\text{sech}^2 u > 0 \text{ for } u > 0. $$
+  <p style="margin-top: 0.5rem;">Consequence: the equation $u\tanh u = 1$ has a unique positive root, and $u > u_c \Leftrightarrow u\tanh u > 1$.</p>
+</div>
+
+<hr>
+
+<!-- ============ 5. Outer catenoid has d/R < u_c ============ -->
+<h3 id="s2-ushape">5. Why the OUTER catenoid satisfies $d/R < u_c$</h3>
+
+<p>Recall from §4 our goal: show $\dfrac{d}{R_{\text{out}}} < u_c$. Here's the full argument in four simple steps.</p>
+
+<h4>Step A — Introduce the function $g(R)$</h4>
+
+<p>The boundary condition of the catenoid is $R\cosh(d/R) = r$. Define</p>
+<div class="math-display">
+  $$ g(R) \;=\; R\cosh(d/R). $$
+</div>
+
+<p>So $R_{\text{in}}$ and $R_{\text{out}}$ are the two $R$ values where $g(R) = r$.</p>
+
+<h4>Step B — $g$ is U-shaped</h4>
+
+<p>Check the ends:</p>
+<ul>
+  <li>$R \to 0$: $\cosh(d/R)$ explodes → $g(R)$ huge</li>
+  <li>$R \to \infty$: $\cosh(d/R) \to 1$ but $R$ huge → $g(R)$ huge</li>
+</ul>
+
+<p>So $g$ is huge at both ends and must dip somewhere in between. Call the bottom $R_*$.</p>
+
+<h4>Step C — Find $R_*$</h4>
+
+<p>At the bottom, $g'(R_*) = 0$. Compute:</p>
+
+<div class="math-display">
+  $$ g'(R) \;=\; \cosh\!\left(\tfrac{d}{R}\right) - \tfrac{d}{R}\sinh\!\left(\tfrac{d}{R}\right). $$
+</div>
+
+<p>Set to zero, divide both sides by $\cosh(d/R)$:</p>
+
+<div class="math-display" style="font-size: 1.25rem;">
+  $$ \frac{d}{R_*}\,\tanh\!\left(\frac{d}{R_*}\right) \;=\; 1. $$
+</div>
+
+<div class="box-imagine" style="background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 6px; padding: 1rem 1.25rem; margin: 1.25rem 0;">
+  <div style="font-weight: bold; color: #b45309; margin-bottom: 0.5rem;">⚡ THE KEY OBSERVATION ⚡</div>
+  <p style="margin: 0 0 0.5rem;">Look back at §4: $u_c$ was defined by</p>
+  <p style="margin: 0 0 0.5rem; text-align: center;">$u_c\tanh u_c = 1.$</p>
+  <p style="margin: 0 0 0.5rem;">The equation at Step C is the <strong>same equation</strong>, just with "$u$" renamed "$d/R_*$". Since that equation has a unique positive solution, the two quantities must equal:</p>
+  <p style="text-align: center; font-size: 1.3rem; margin: 0.5rem 0;">$\dfrac{d}{R_*} \;=\; u_c.$</p>
+  <p style="margin: 0;">One equation, two places — that's the whole trick.</p>
+</div>
+
+<h4>Step D — Outer branch gives $d/R_{\text{out}} < u_c$</h4>
+
+<p>$R_{\text{out}}$ is the root to the <strong>right</strong> of the bottom, i.e. $R_{\text{out}} > R_*$.</p>
+
+<p>"Bigger $R$ means smaller $d/R$" (divide a fixed $d$ by a bigger number → smaller result). So</p>
+
+<div class="math-display" style="font-size: 1.2rem;">
+  $$ R_{\text{out}} > R_* \;\Longrightarrow\; \frac{d}{R_{\text{out}}} \;<\; \frac{d}{R_*} \;=\; u_c. \quad\checkmark $$
+</div>
+
+<h4>Picture of $g(R)$</h4>
+
+<svg viewBox="0 0 540 260" style="display: block; margin: 1rem auto; width: 100%; max-width: 580px;">
+  <!-- axes -->
+  <line x1="60" y1="220" x2="490" y2="220" stroke="#666" stroke-width="1"/>
+  <text x="498" y="224" font-size="11" fill="#666">R</text>
+  <line x1="60" y1="40" x2="60" y2="225" stroke="#666" stroke-width="1"/>
+  <text x="42" y="44" font-size="11" fill="#666">g(R)</text>
+
+  <!-- accurate polyline of g(R), d=1 -->
+  <polyline points="67,56 75,120 82,155 90,175 97,187 112,201 127,206 147,208 172,206 202,201 246,190 321,166 395,141 470,111" fill="none" stroke="#2d5ba4" stroke-width="2.5"/>
+
+  <!-- horizontal line y = r -->
+  <line x1="60" y1="181" x2="490" y2="181" stroke="#b45309" stroke-width="2" stroke-dasharray="5,3"/>
+  <text x="495" y="185" font-size="11" fill="#b45309" font-weight="bold">r</text>
+
+  <!-- R_* marker -->
+  <circle cx="147" cy="208" r="5" fill="#7c3aed"/>
+  <line x1="147" y1="208" x2="147" y2="220" stroke="#7c3aed" stroke-width="1"/>
+  <text x="147" y="245" text-anchor="middle" font-size="12" fill="#7c3aed" font-weight="bold">R_*</text>
+  <text x="147" y="258" text-anchor="middle" font-size="10" fill="#7c3aed">(bottom of U)</text>
+
+  <!-- R_in marker -->
+  <circle cx="92" cy="181" r="5" fill="#dc2626"/>
+  <text x="92" y="170" text-anchor="middle" font-size="12" fill="#dc2626" font-weight="bold">R_in</text>
+
+  <!-- R_out marker -->
+  <circle cx="276" cy="181" r="5" fill="#16a34a"/>
+  <text x="276" y="170" text-anchor="middle" font-size="12" fill="#16a34a" font-weight="bold">R_out</text>
+</svg>
+
+<p style="text-align: center; color: var(--muted); font-size: 0.9rem;">Red = inner ($R < R_*$, so $d/R > u_c$). Green = outer ($R > R_*$, so $d/R < u_c$). Outer sits to the right of the bottom, which is exactly what we need.</p>
+
+<hr>
+
+<!-- ============ 6. Conclusion ============ -->
+<h3 id="s2-conclude">6. Putting it together (3-line proof)</h3>
+
+<div style="background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0;">
+  <ol style="margin: 0; padding-left: 1.5rem; line-height: 2;">
+    <li><strong>From §5:</strong> $\;\dfrac{d}{R_{\text{out}}} < u_c$.</li>
+    <li><strong>For any $z \in [-d, d]$:</strong> $\;\left|\dfrac{z}{R_{\text{out}}}\right| \leq \dfrac{d}{R_{\text{out}}} < u_c$.</li>
+    <li><strong>§4's sign rule:</strong> $|u| < u_c \implies \widetilde h(u) > 0$.</li>
+  </ol>
+  <div style="background: #f0fdf4; padding: 0.75rem 1rem; border-radius: 6px; border-left: 4px solid #16a34a; margin-top: 1rem;">
+    <strong>Therefore:</strong> $h(z) = \widetilde h(z/R_{\text{out}}) > 0$ for every $z \in [-d, d]$. $\blacksquare$
+  </div>
+</div>
+
+<div class="result">
+  <div class="result-title">Step 2 Result</div>
+  <p>For the outer catenoid $R = R_{\text{out}}$, the Jacobi field
+  $$ h(z) \;=\; 1 - \frac{z}{R_{\text{out}}}\tanh\!\left(\frac{z}{R_{\text{out}}}\right) $$
+  is <strong>strictly positive</strong> on $[-d, d]$.</p>
+</div>
+
+<h4>Why does the inner catenoid fail?</h4>
+
+<div class="boxed">
+  Inner: $R_{\text{in}} < R_*$, so $d/R_{\text{in}} > u_c$, so $h$ crosses zero inside $[-d, d]$ — breaks the argument.
+  <p style="margin-top: 0.5rem;">That's exactly why inner catenoids are <em>unstable</em>: Step 3's trick needs $h > 0$, and the inner catenoid doesn't have it.</p>
+</div>
+
+<h4>What Step 3 will use from here</h4>
+
+<ol>
+  <li>$h$ from Step 1: $h(z) = 1 - (z/R)\tanh(z/R)$, with $Lh = 0$.</li>
+  <li>From Step 2 (just finished): $h(z) > 0$ on $[-d, d]$.</li>
+  <li>Combined via the Picone identity (Step 3 will derive this):
+    $$ \int_{-d}^{d}\varphi(L\varphi)\,dz \;=\; \int_{-d}^{d} h^2\!\left(\frac{\varphi}{h}\right)'^{2} dz \;\geq\; 0. $$
+    Right side is obviously $\geq 0$ since it's a square. So left side is $\geq 0$. So $A''(0) \geq 0$. So outer catenoid is stable.</li>
+</ol>
+
+<hr>
+<p style="text-align: center; color: var(--muted); margin-top: 2rem;">End of Step 2</p>
+
+<hr>
+
+<h2 id="step3" style="font-size: 1.5rem; border-bottom: 3px solid var(--accent);">Step 3 — Stability Calculation</h2>
+
+<!-- ============ 1. Goal ============ -->
+<h3 id="s3-goal">1. Goal</h3>
+
+<p>From Steps 0–2 we have:</p>
+<ul>
+  <li><strong>Step 0:</strong> $A''(0) = 2\pi R\!\int_{-d}^{d}\!\varphi(L\varphi)\,dz$, with $L\varphi = -\varphi'' - V\varphi$, $V(z) = \dfrac{2}{R^2\cosh^2(z/R)}$, and $\varphi(\pm d) = 0$.</li>
+  <li><strong>Step 1:</strong> $h(z) = 1 - (z/R)\tanh(z/R)$ satisfies $Lh = 0$, equivalently $V = -h''/h$.</li>
+  <li><strong>Step 2:</strong> $R = R_{\text{out}} \implies h > 0$ on the whole closed interval $[-d,d]$.</li>
+</ul>
+
+<p>Step 3 goal: prove that for every $\varphi \in C^2([-d,d])$ with $\varphi(\pm d) = 0$ and $\varphi \not\equiv 0$,</p>
+
+<div class="result">
+  <div class="result-title">Step 3 Theorem</div>
+  $$ \int_{-d}^{d}\!\varphi(L\varphi)\,dz \;=\; \int_{-d}^{d}\! h(z)^2\!\left(\frac{d}{dz}\frac{\varphi(z)}{h(z)}\right)^{\!2}\!dz \;>\; 0. $$
+</div>
+
+<p>The right-hand side is an integral of a square, so it is $\geq 0$ for free. The whole job is the equality.</p>
+
+<hr>
+
+<!-- ============ 2. Plan ============ -->
+<h3 id="s3-plan">2. The plan in plain English</h3>
+
+<p>We will compute the LHS and the RHS <em>separately</em>, and show they both equal the same expression:</p>
+
+<div class="boxed">
+  $$ \int_{-d}^{d}\!\left(\varphi'^{\,2} \;+\; \frac{h''}{h}\,\varphi^2\right)\,dz. \qquad (\diamond) $$
+</div>
+
+<p>That's the entire proof. No substitution, no clever change of variable. Two tools only:</p>
+
+<ol>
+  <li><strong>Integration by parts.</strong> Boundary brackets all vanish because $\varphi(\pm d) = 0$.</li>
+  <li><strong>The Step 1 identity</strong> $V = -h''/h$. This is what lets us replace $V$ by something built from $h$.</li>
+</ol>
+
+<p>So §3 expands the LHS using these two tools and lands on $(\diamond)$. §4 expands the RHS using the same two tools and lands on $(\diamond)$. §5 reads off LHS = RHS.</p>
+
+<hr>
+
+<!-- ============ 3. Compute LHS ============ -->
+<h3 id="s3-lhs">3. Compute the LHS</h3>
+
+<p>Expand $L\varphi$:</p>
+<div class="math-display">
+  $$ \int_{-d}^{d}\!\varphi(L\varphi)\,dz \;=\; -\!\int_{-d}^{d}\!\varphi\,\varphi''\,dz \;-\; \int_{-d}^{d}\! V\varphi^2\,dz. $$
+</div>
+
+<p><strong>IBP on the first integral.</strong> The boundary bracket $[\varphi\,\varphi']_{-d}^{d}$ is $0$ because $\varphi(\pm d) = 0$, so:</p>
+<div class="math-display">
+  $$ -\!\int_{-d}^{d}\!\varphi\,\varphi''\,dz \;=\; -\bigl[\varphi\,\varphi'\bigr]_{-d}^{d} \;+\; \int_{-d}^{d}\!\varphi'^{\,2}\,dz \;=\; \int_{-d}^{d}\!\varphi'^{\,2}\,dz. $$
+</div>
+
+<p><strong>Use Step 1.</strong> Since $V = -h''/h$, we have $-V\varphi^2 = (h''/h)\,\varphi^2$. Combining:</p>
+
+<div class="boxed">
+  $$ \text{LHS} \;=\; \int_{-d}^{d}\!\left(\varphi'^{\,2} \;+\; \frac{h''}{h}\,\varphi^2\right)\,dz. \qquad (\diamond) $$
+</div>
+
+<p>Done with the LHS.</p>
+
+<hr>
+
+<!-- ============ 4. Compute RHS ============ -->
+<h3 id="s3-rhs">4. Compute the RHS</h3>
+
+<p><strong>Step 4a — expand the square.</strong> Quotient rule gives</p>
+<div class="math-display">
+  $$ \left(\frac{\varphi}{h}\right)' \;=\; \frac{\varphi'\,h - \varphi\,h'}{h^2} \;=\; \frac{\varphi'}{h} - \frac{\varphi\,h'}{h^2}. $$
+</div>
+
+<p>Multiply by $h$ and square:</p>
+<div class="math-display">
+  $$ h\!\left(\frac{\varphi}{h}\right)' \;=\; \varphi' - \frac{\varphi\,h'}{h}, $$
+</div>
+<div class="math-display">
+  $$ h^2\!\left(\frac{\varphi}{h}\right)'^{\!2} \;=\; \left(\varphi' - \frac{\varphi\,h'}{h}\right)^{\!2} \;=\; \varphi'^{\,2} \;-\; 2\varphi\,\varphi'\,\frac{h'}{h} \;+\; \varphi^2\,\frac{h'^{\,2}}{h^2}. $$
+</div>
+
+<p>Integrate term by term:</p>
+<div class="math-display">
+  $$ \text{RHS} \;=\; \int_{-d}^{d}\!\varphi'^{\,2}\,dz \;-\; 2\!\int_{-d}^{d}\!\varphi\varphi'\,\frac{h'}{h}\,dz \;+\; \int_{-d}^{d}\!\varphi^2\,\frac{h'^{\,2}}{h^2}\,dz. \qquad (\heartsuit) $$
+</div>
+
+<p><strong>Step 4b — handle the cross term by IBP.</strong> Notice that $2\varphi\varphi' = (\varphi^2)'$. So</p>
+<div class="math-display">
+  $$ 2\!\int_{-d}^{d}\!\varphi\varphi'\,\frac{h'}{h}\,dz \;=\; \int_{-d}^{d}\!(\varphi^2)'\,\frac{h'}{h}\,dz. $$
+</div>
+
+<p>IBP on the right-hand side. The boundary bracket $\bigl[\varphi^2\,h'/h\bigr]_{-d}^{d}$ is $0$ ($\varphi(\pm d) = 0$, and Step 2's $h(\pm d) > 0$ keeps the factor $h'/h$ finite):</p>
+<div class="math-display">
+  $$ \int_{-d}^{d}\!(\varphi^2)'\,\frac{h'}{h}\,dz \;=\; -\!\int_{-d}^{d}\!\varphi^2\,\left(\frac{h'}{h}\right)'\,dz. $$
+</div>
+
+<p>Quotient rule again: $(h'/h)' = (h''\,h - h'^{\,2})/h^2 = h''/h - h'^{\,2}/h^2$. So</p>
+<div class="math-display">
+  $$ 2\!\int_{-d}^{d}\!\varphi\varphi'\,\frac{h'}{h}\,dz \;=\; -\!\int_{-d}^{d}\!\varphi^2\,\frac{h''}{h}\,dz \;+\; \int_{-d}^{d}\!\varphi^2\,\frac{h'^{\,2}}{h^2}\,dz. $$
+</div>
+
+<p><strong>Step 4c — substitute back into $(\heartsuit)$.</strong></p>
+<div class="math-display">
+  $$ \text{RHS} \;=\; \int\!\varphi'^{\,2}\,dz \;-\; \left[-\!\int\!\varphi^2\,\frac{h''}{h}\,dz \;+\; \int\!\varphi^2\,\frac{h'^{\,2}}{h^2}\,dz\right] \;+\; \int\!\varphi^2\,\frac{h'^{\,2}}{h^2}\,dz. $$
+</div>
+
+<p>The two $\int\!\varphi^2\,h'^{\,2}/h^2\,dz$ pieces cancel exactly:</p>
+
+<div class="boxed">
+  $$ \text{RHS} \;=\; \int_{-d}^{d}\!\left(\varphi'^{\,2} \;+\; \frac{h''}{h}\,\varphi^2\right)\,dz. \qquad (\diamond) $$
+</div>
+
+<p>Done with the RHS.</p>
+
+<hr>
+
+<!-- ============ 5. LHS = RHS ============ -->
+<h3 id="s3-equal">5. LHS = RHS</h3>
+
+<p>The boxed expressions in §3 and §4 are <em>identical</em> — both are $(\diamond)$. So:</p>
+
+<div class="result">
+  <div class="result-title">Identity</div>
+  $$ \int_{-d}^{d}\!\varphi(L\varphi)\,dz \;=\; \int_{-d}^{d}\! h(z)^2\!\left(\frac{d}{dz}\frac{\varphi(z)}{h(z)}\right)^{\!2}\!dz. $$
+</div>
+
+<p>The right-hand integrand is continuous and $\geq 0$ (it's $h^2$ times a square, and $h^2 \geq 0$). So the integral is $\geq 0$, hence:</p>
+<div class="math-display">
+  $$ A''(0) \;=\; 2\pi R\!\int_{-d}^{d}\!\varphi(L\varphi)\,dz \;\geq\; 0. $$
+</div>
+
+<p>This is <em>weak</em> stability. The next subsection upgrades it to strict.</p>
+
+<hr>
+
+<!-- ============ 6. Strict inequality ============ -->
+<h3 id="s3-strict">6. Strict inequality</h3>
+
+<p>§5 gave us $A''(0) \geq 0$. To conclude <em>strict</em> stability we want $A''(0) > 0$ for every nonzero $\varphi$. So we have to rule out the possibility that the right-hand integral could equal $0$ for some $\varphi$ that isn't itself $\equiv 0$.</p>
+
+<p><strong>Argue by contradiction.</strong> Suppose:</p>
+<ul>
+  <li>$\varphi \not\equiv 0$ (i.e. $\varphi$ is not the zero function), and</li>
+  <li>$\displaystyle\int_{-d}^{d}\! h^2\!\left(\frac{\varphi}{h}\right)'^{\!2}\,dz \;=\; 0$.</li>
+</ul>
+<p>We will derive $\varphi \equiv 0$, which contradicts the first assumption.</p>
+
+<p><strong>(a) Integrand vanishes pointwise.</strong> The integrand is $h(z)^2\,\bigl((\varphi/h)'(z)\bigr)^2$. It is continuous on $[-d,d]$ and $\geq 0$ everywhere ($h^2 \geq 0$, and a square is $\geq 0$). A continuous nonnegative function whose integral is $0$ must be $0$ at every point:</p>
+<div class="math-display">
+  $$ h(z)^2 \,\bigl((\varphi/h)'(z)\bigr)^2 \;=\; 0 \qquad \text{for every } z \in [-d,d]. $$
+</div>
+
+<p><strong>(b) Divide out $h^2$.</strong> Step 2 gives $h(z)^2 > 0$ for every $z \in [-d,d]$. So we can divide both sides by $h^2$ and the equation still holds:</p>
+<div class="math-display">
+  $$ \bigl((\varphi/h)'(z)\bigr)^2 \;=\; 0 \qquad \text{for every } z \in [-d,d]. $$
+</div>
+
+<p><strong>(c) A square is $0$ only if the thing being squared is $0$.</strong> So</p>
+<div class="math-display">
+  $$ (\varphi/h)'(z) \;=\; 0 \qquad \text{for every } z \in [-d,d]. $$
+</div>
+
+<p><strong>(d) Zero derivative everywhere $\Longrightarrow$ constant function.</strong> So there is a constant $c$ with</p>
+<div class="math-display">
+  $$ \frac{\varphi(z)}{h(z)} \;=\; c \qquad \text{for every } z \in [-d,d], $$
+</div>
+<p>i.e. $\varphi(z) = c\,h(z)$ pointwise.</p>
+
+<p><strong>(e) Boundary kills $c$.</strong> Step 0 gives $\varphi(d) = 0$. Combining with $\varphi = c\,h$:</p>
+<div class="math-display">
+  $$ 0 \;=\; \varphi(d) \;=\; c\,h(d). $$
+</div>
+<p>Step 2 gives $h(d) > 0$, so the only way $c\,h(d) = 0$ is $c = 0$.</p>
+
+<p><strong>(f) Contradiction.</strong> From (d) and $c = 0$:</p>
+<div class="math-display">
+  $$ \varphi(z) \;=\; c\,h(z) \;=\; 0\cdot h(z) \;=\; 0 \qquad \text{for every } z \in [-d,d], $$
+</div>
+<p>i.e. $\varphi \equiv 0$. But we assumed $\varphi \not\equiv 0$. Contradiction. ✗</p>
+
+<p><strong>Conclusion.</strong> The assumption "the integral equals $0$ for some nonzero $\varphi$" must be false. Therefore for every nontrivial admissible $\varphi$, the integral is <em>strictly</em> positive:</p>
+
+<div class="result">
+  <div class="result-title">Step 3 Result — Strict Stability</div>
+  $$ A''(0) \;=\; 2\pi R\!\int_{-d}^{d}\!\varphi(L\varphi)\,dz \;=\; 2\pi R\!\int_{-d}^{d}\! h^2\!\left(\frac{\varphi}{h}\right)'^{\!2}\!dz \;>\; 0. $$
+  <p style="margin-top: 0.5rem;">The outer catenoid is <strong>strictly stable</strong>: every nonzero fixed-boundary perturbation strictly increases area.</p>
+</div>
+
+<h4>Summary of the proof (Steps 0–3)</h4>
+
+<ol>
+  <li><strong>Step 0.</strong> $A''(0) = 2\pi R\int \varphi(L\varphi)\,dz$, with $L\varphi = -\varphi'' - V\varphi$, $V = 2/(R^2\cosh^2(z/R))$, $\varphi(\pm d) = 0$.</li>
+  <li><strong>Step 1.</strong> $h(z) = 1 - (z/R)\tanh(z/R)$ satisfies $Lh = 0$.</li>
+  <li><strong>Step 2.</strong> $h > 0$ on $[-d,d]$ when $R = R_{\text{out}}$.</li>
+  <li><strong>Step 3.</strong> Compute LHS $\int \varphi(L\varphi)\,dz$ and RHS $\int h^2(\varphi/h)'^{\,2}\,dz$ separately. Both equal $\int(\varphi'^{\,2} + (h''/h)\varphi^2)\,dz$ — using IBP and Step 1's $V = -h''/h$. So the two integrals match. The right side is an integral of a square, so $A''(0) \geq 0$, strict unless $\varphi \equiv 0$.</li>
+</ol>
+
+<p><strong>Conclusion:</strong> The outer catenoid is strictly stable. ∎</p>
+
+<hr>
+<p style="text-align: center; color: var(--muted); margin-top: 2rem;">End of Step 3</p>
+
+</div>
+</main>
+</div>
+</body>
+</html>
