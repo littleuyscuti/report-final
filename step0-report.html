@@ -194,11 +194,13 @@
       <li class="toc-indent"><a href="#s2-conclude">6. Conclusion</a></li>
       <li class="toc-section"><a href="#step3">Step 3 — Stability Calculation</a></li>
       <li class="toc-indent"><a href="#s3-goal">1. Goal</a></li>
-      <li class="toc-indent"><a href="#s3-plan">2. The plan in plain English</a></li>
-      <li class="toc-indent"><a href="#s3-lhs">3. Compute the LHS</a></li>
-      <li class="toc-indent"><a href="#s3-rhs">4. Compute the RHS</a></li>
-      <li class="toc-indent"><a href="#s3-equal">5. LHS = RHS</a></li>
-      <li class="toc-indent"><a href="#s3-strict">6. Strict inequality</a></li>
+      <li class="toc-indent"><a href="#s3-vs">2. h vs φ — same species, different roles</a></li>
+      <li class="toc-indent"><a href="#s3-motivation">3. Why introduce u = φ/h</a></li>
+      <li class="toc-indent"><a href="#s3-substitute">4. Substitute φ = u·h into Lφ</a></li>
+      <li class="toc-indent"><a href="#s3-totalderiv">5. Recognise a total derivative</a></li>
+      <li class="toc-indent"><a href="#s3-integrate">6. Integrate over [−d, d]</a></li>
+      <li class="toc-indent"><a href="#s3-result">7. Result — weak stability</a></li>
+      <li class="toc-indent"><a href="#s3-strict">8. Strict inequality</a></li>
     </ul>
   </nav>
 </aside>
@@ -1477,195 +1479,189 @@
 
 <p>From Steps 0–2 we have:</p>
 <ul>
-  <li><strong>Step 0:</strong> $A''(0) = 2\pi R\!\int_{-d}^{d}\!\varphi(L\varphi)\,dz$, with $L\varphi = -\varphi'' - V\varphi$, $V(z) = \dfrac{2}{R^2\cosh^2(z/R)}$, and $\varphi(\pm d) = 0$.</li>
-  <li><strong>Step 1:</strong> $h(z) = 1 - (z/R)\tanh(z/R)$ satisfies $Lh = 0$, equivalently $V = -h''/h$.</li>
+  <li><strong>Step 0:</strong> $A''(0) = 2\pi R\!\int_{-d}^{d}\!\varphi(L\varphi)\,dz$, with $L\varphi = -\varphi'' - q(z)\varphi$, $q(z) = \dfrac{2}{R^2\cosh^2(z/R)}$, and $\varphi(\pm d) = 0$.</li>
+  <li><strong>Step 1:</strong> $h(z) = 1 - (z/R)\tanh(z/R)$ satisfies $Lh = 0$.</li>
   <li><strong>Step 2:</strong> $R = R_{\text{out}} \implies h > 0$ on the whole closed interval $[-d,d]$.</li>
 </ul>
 
-<p>Step 3 goal: prove that for every $\varphi \in C^2([-d,d])$ with $\varphi(\pm d) = 0$ and $\varphi \not\equiv 0$,</p>
+<p>Step 3 goal: prove that for every $\varphi \in C^2([-d,d])$ with $\varphi(\pm d) = 0$,</p>
 
 <div class="result">
   <div class="result-title">Step 3 Theorem</div>
-  $$ \int_{-d}^{d}\!\varphi(L\varphi)\,dz \;=\; \int_{-d}^{d}\! h(z)^2\!\left(\frac{d}{dz}\frac{\varphi(z)}{h(z)}\right)^{\!2}\!dz \;>\; 0. $$
+  $$ \int_{-d}^{d}\!\varphi(L\varphi)\,dz \;=\; \int_{-d}^{d}\! h(z)^2\!\left(\frac{d}{dz}\frac{\varphi(z)}{h(z)}\right)^{\!2}\!dz \;\geq\; 0, $$
+  <p style="margin-top: 0.5rem;">with strict $> 0$ whenever $\varphi \not\equiv 0$.</p>
 </div>
 
-<p>The right-hand side is an integral of a square, so it is $\geq 0$ for free. The whole job is the equality.</p>
+<p>The right-hand side is an integral of a square (times $h^2 \geq 0$), so it is $\geq 0$ for free. The whole job is the equality.</p>
 
 <hr>
 
-<!-- ============ 2. Plan ============ -->
-<h3 id="s3-plan">2. The plan in plain English</h3>
+<!-- ============ 2. h vs φ — clarification ============ -->
+<h3 id="s3-vs">2. $h$ vs $\varphi$</h3>
 
-<p>We will compute the LHS and the RHS <em>separately</em>, and show they both equal the same expression:</p>
+<p>Both are smooth functions on $[-d, d]$, but they play different roles:</p>
+
+<div class="math-display">
+  $$ \begin{array}{l|c|c}
+  & \boldsymbol{\varphi}\ \textbf{(perturbation)} & \boldsymbol{h}\ \textbf{(Jacobi field)} \\ \hline
+  Lh = 0 & \text{not required} & \text{required} \\
+  \text{value at }z = \pm d & \;= 0 & \;> 0
+  \end{array} $$
+</div>
+
+<p>$\varphi(\pm d) = 0$ because the rings are clamped. $h(\pm d) > 0$ has no physical meaning — it's just a property we proved in Step 2.</p>
+
+<hr>
+
+<!-- ============ 3. Why introduce u ============ -->
+<h3 id="s3-motivation">3. Why introduce $u = \varphi/h$</h3>
+
+<ul>
+  <li><strong>$h$ already cancels its own $q$.</strong> Step 1 gave $Lh = 0$, i.e. $-h'' = q\,h$. We want to use that to simplify $L\varphi$.</li>
+  <li><strong>Define $u := \varphi/h$.</strong> Why this is legal:
+    <ul>
+      <li>$\varphi$ is smooth on $[-d, d]$.</li>
+      <li>$h$ is smooth on $[-d, d]$ and $h > 0$ on $[-d, d]$ (Step 2).</li>
+      <li>Smooth $\div$ smooth-and-nonzero $=$ smooth. So $u$ is itself a smooth function.</li>
+    </ul>
+  </li>
+  <li><strong>Equivalent form.</strong> $\varphi = u \cdot h$. This is a re-parametrization of $\varphi$ — same information, different name. No restriction added.</li>
+</ul>
+
+<hr>
+
+<!-- ============ 4. Substitute φ = uh ============ -->
+<h3 id="s3-substitute">4. Substitute $\varphi = u\cdot h$ into $L\varphi$</h3>
+
+<p>Compute $\varphi''$ by the product rule:</p>
+
+<div class="math-display">
+  $$ \varphi'' \;=\; (uh)'' \;=\; (u'h + uh')' \;=\; u''h + 2\,u'h' + uh''. $$
+</div>
+
+<p>Plug into $L\varphi = -\varphi'' - q\,\varphi$ and group:</p>
+
+<div class="math-display">
+  $$ L\varphi \;=\; -u''h - 2\,u'h' - u\,h'' - q\,u\,h \;=\; -u''h - 2\,u'h' \;+\; u\bigl(-h'' - q\,h\bigr). $$
+</div>
+
+<p>The bracketed term $-h'' - q\,h$ is exactly $Lh$, which is $0$ by Step 1. So:</p>
 
 <div class="boxed">
-  $$ \int_{-d}^{d}\!\left(\varphi'^{\,2} \;+\; \frac{h''}{h}\,\varphi^2\right)\,dz. \qquad (\diamond) $$
+  $$ L\varphi \;=\; -u''h - 2\,u'h'. $$
 </div>
 
-<p>That's the entire proof. No substitution, no clever change of variable. Two tools only:</p>
+<p>The $q$ term is gone. (Exactly the cancellation we set up in §3.)</p>
 
-<ol>
-  <li><strong>Integration by parts.</strong> Boundary brackets all vanish because $\varphi(\pm d) = 0$.</li>
-  <li><strong>The Step 1 identity</strong> $V = -h''/h$. This is what lets us replace $V$ by something built from $h$.</li>
-</ol>
+<p><strong>Multiply by $\varphi = u h$:</strong></p>
 
-<p>So §3 expands the LHS using these two tools and lands on $(\diamond)$. §4 expands the RHS using the same two tools and lands on $(\diamond)$. §5 reads off LHS = RHS.</p>
+<div class="math-display">
+  $$ \varphi\,L\varphi \;=\; (uh)\bigl(-u''h - 2u'h'\bigr) \;=\; -u\,u''\,h^2 \;-\; 2\,u\,u'\,h\,h'. $$
+</div>
 
 <hr>
 
-<!-- ============ 3. Compute LHS ============ -->
-<h3 id="s3-lhs">3. Compute the LHS</h3>
+<!-- ============ 5. Total derivative ============ -->
+<h3 id="s3-totalderiv">5. Recognise a total derivative</h3>
 
-<p>Expand $L\varphi$:</p>
+<p>Apply the product rule to $u\,u'\,h^2$:</p>
+
 <div class="math-display">
-  $$ \int_{-d}^{d}\!\varphi(L\varphi)\,dz \;=\; -\!\int_{-d}^{d}\!\varphi\,\varphi''\,dz \;-\; \int_{-d}^{d}\! V\varphi^2\,dz. $$
+  $$ \frac{d}{dz}\bigl(u\,u'\,h^2\bigr) \;=\; (u\,u')'\,h^2 \;+\; u\,u'\cdot(h^2)' $$
+</div>
+<div class="math-display">
+  $$ \phantom{\frac{d}{dz}\bigl(u\,u'\,h^2\bigr)} \;=\; \bigl((u')^2 + u\,u''\bigr)\,h^2 \;+\; u\,u'\cdot 2\,h\,h' $$
+</div>
+<div class="math-display">
+  $$ \phantom{\frac{d}{dz}\bigl(u\,u'\,h^2\bigr)} \;=\; (u')^2\,h^2 \;+\; u\,u''\,h^2 \;+\; 2\,u\,u'\,h\,h'. $$
 </div>
 
-<p><strong>IBP on the first integral.</strong> The boundary bracket $[\varphi\,\varphi']_{-d}^{d}$ is $0$ because $\varphi(\pm d) = 0$, so:</p>
+<p>The last two terms are exactly the <em>negatives</em> of what appeared in $\varphi L\varphi$. Rearranging:</p>
+
 <div class="math-display">
-  $$ -\!\int_{-d}^{d}\!\varphi\,\varphi''\,dz \;=\; -\bigl[\varphi\,\varphi'\bigr]_{-d}^{d} \;+\; \int_{-d}^{d}\!\varphi'^{\,2}\,dz \;=\; \int_{-d}^{d}\!\varphi'^{\,2}\,dz. $$
+  $$ -u\,u''\,h^2 \;-\; 2\,u\,u'\,h\,h' \;=\; (u')^2\,h^2 \;-\; \frac{d}{dz}\bigl(u\,u'\,h^2\bigr). $$
 </div>
 
-<p><strong>Use Step 1.</strong> Since $V = -h''/h$, we have $-V\varphi^2 = (h''/h)\,\varphi^2$. Combining:</p>
+<p>So:</p>
 
 <div class="boxed">
-  $$ \text{LHS} \;=\; \int_{-d}^{d}\!\left(\varphi'^{\,2} \;+\; \frac{h''}{h}\,\varphi^2\right)\,dz. \qquad (\diamond) $$
+  $$ \varphi\,L\varphi \;=\; (u')^2\,h^2 \;-\; \frac{d}{dz}\bigl(u\,u'\,h^2\bigr). $$
 </div>
 
-<p>Done with the LHS.</p>
+<p>Two pieces: a non-negative one, and an exact derivative. Perfect for integration.</p>
 
 <hr>
 
-<!-- ============ 4. Compute RHS ============ -->
-<h3 id="s3-rhs">4. Compute the RHS</h3>
+<!-- ============ 6. Integrate ============ -->
+<h3 id="s3-integrate">6. Integrate over $[-d, d]$</h3>
 
-<p><strong>Step 4a — expand the square.</strong> Quotient rule gives</p>
 <div class="math-display">
-  $$ \left(\frac{\varphi}{h}\right)' \;=\; \frac{\varphi'\,h - \varphi\,h'}{h^2} \;=\; \frac{\varphi'}{h} - \frac{\varphi\,h'}{h^2}. $$
+  $$ \int_{-d}^{d}\!\varphi\,L\varphi\,dz \;=\; \int_{-d}^{d}\! h^2\,(u')^2\,dz \;-\; \bigl[u\,u'\,h^2\bigr]_{-d}^{d}. $$
 </div>
 
-<p>Multiply by $h$ and square:</p>
+<p><strong>Boundary term vanishes.</strong> At $z = \pm d$:</p>
+
+<ul>
+  <li>$\varphi(\pm d) = 0$ (admissibility, Step 0).</li>
+  <li>$h(\pm d) > 0$ (Step 2 — strictly, not just $\geq 0$).</li>
+</ul>
+
+<p>So $u(\pm d) = \varphi(\pm d)/h(\pm d) = 0/(\text{positive}) = 0$, and</p>
+
 <div class="math-display">
-  $$ h\!\left(\frac{\varphi}{h}\right)' \;=\; \varphi' - \frac{\varphi\,h'}{h}, $$
-</div>
-<div class="math-display">
-  $$ h^2\!\left(\frac{\varphi}{h}\right)'^{\!2} \;=\; \left(\varphi' - \frac{\varphi\,h'}{h}\right)^{\!2} \;=\; \varphi'^{\,2} \;-\; 2\varphi\,\varphi'\,\frac{h'}{h} \;+\; \varphi^2\,\frac{h'^{\,2}}{h^2}. $$
+  $$ \bigl[u\,u'\,h^2\bigr]_{-d}^{d} \;=\; 0\cdot u'(d)\cdot h(d)^2 \;-\; 0\cdot u'(-d)\cdot h(-d)^2 \;=\; 0. $$
 </div>
 
-<p>Integrate term by term:</p>
-<div class="math-display">
-  $$ \text{RHS} \;=\; \int_{-d}^{d}\!\varphi'^{\,2}\,dz \;-\; 2\!\int_{-d}^{d}\!\varphi\varphi'\,\frac{h'}{h}\,dz \;+\; \int_{-d}^{d}\!\varphi^2\,\frac{h'^{\,2}}{h^2}\,dz. \qquad (\heartsuit) $$
-</div>
-
-<p><strong>Step 4b — handle the cross term by IBP.</strong> Notice that $2\varphi\varphi' = (\varphi^2)'$. So</p>
-<div class="math-display">
-  $$ 2\!\int_{-d}^{d}\!\varphi\varphi'\,\frac{h'}{h}\,dz \;=\; \int_{-d}^{d}\!(\varphi^2)'\,\frac{h'}{h}\,dz. $$
-</div>
-
-<p>IBP on the right-hand side. The boundary bracket $\bigl[\varphi^2\,h'/h\bigr]_{-d}^{d}$ is $0$ ($\varphi(\pm d) = 0$, and Step 2's $h(\pm d) > 0$ keeps the factor $h'/h$ finite):</p>
-<div class="math-display">
-  $$ \int_{-d}^{d}\!(\varphi^2)'\,\frac{h'}{h}\,dz \;=\; -\!\int_{-d}^{d}\!\varphi^2\,\left(\frac{h'}{h}\right)'\,dz. $$
-</div>
-
-<p>Quotient rule again: $(h'/h)' = (h''\,h - h'^{\,2})/h^2 = h''/h - h'^{\,2}/h^2$. So</p>
-<div class="math-display">
-  $$ 2\!\int_{-d}^{d}\!\varphi\varphi'\,\frac{h'}{h}\,dz \;=\; -\!\int_{-d}^{d}\!\varphi^2\,\frac{h''}{h}\,dz \;+\; \int_{-d}^{d}\!\varphi^2\,\frac{h'^{\,2}}{h^2}\,dz. $$
-</div>
-
-<p><strong>Step 4c — substitute back into $(\heartsuit)$.</strong></p>
-<div class="math-display">
-  $$ \text{RHS} \;=\; \int\!\varphi'^{\,2}\,dz \;-\; \left[-\!\int\!\varphi^2\,\frac{h''}{h}\,dz \;+\; \int\!\varphi^2\,\frac{h'^{\,2}}{h^2}\,dz\right] \;+\; \int\!\varphi^2\,\frac{h'^{\,2}}{h^2}\,dz. $$
-</div>
-
-<p>The two $\int\!\varphi^2\,h'^{\,2}/h^2\,dz$ pieces cancel exactly:</p>
+<p>The integral identity collapses to:</p>
 
 <div class="boxed">
-  $$ \text{RHS} \;=\; \int_{-d}^{d}\!\left(\varphi'^{\,2} \;+\; \frac{h''}{h}\,\varphi^2\right)\,dz. \qquad (\diamond) $$
+  $$ \int_{-d}^{d}\!\varphi(z)\,(L\varphi)(z)\,dz \;=\; \int_{-d}^{d}\! h(z)^2\,\bigl(u'(z)\bigr)^2\,dz \;=\; \int_{-d}^{d}\! h(z)^2\!\left(\frac{d}{dz}\frac{\varphi(z)}{h(z)}\right)^{\!2}\,dz. $$
 </div>
-
-<p>Done with the RHS.</p>
 
 <hr>
 
-<!-- ============ 5. LHS = RHS ============ -->
-<h3 id="s3-equal">5. LHS = RHS</h3>
+<!-- ============ 7. Result — weak stability ============ -->
+<h3 id="s3-result">7. Result — weak stability</h3>
 
-<p>The boxed expressions in §3 and §4 are <em>identical</em> — both are $(\diamond)$. So:</p>
+<p>The right-hand integrand factors as $\underbrace{h(z)^2}_{\geq 0}\;\cdot\;\underbrace{\bigl((\varphi/h)'(z)\bigr)^2}_{\geq 0\,\text{ (a square)}}$, so the whole integrand is $\geq 0$ pointwise. Hence the integral is $\geq 0$:</p>
 
 <div class="result">
-  <div class="result-title">Identity</div>
-  $$ \int_{-d}^{d}\!\varphi(L\varphi)\,dz \;=\; \int_{-d}^{d}\! h(z)^2\!\left(\frac{d}{dz}\frac{\varphi(z)}{h(z)}\right)^{\!2}\!dz. $$
+  <div class="result-title">Weak stability</div>
+  $$ A''(0) \;=\; 2\pi R\!\int_{-d}^{d}\!\varphi(L\varphi)\,dz \;=\; 2\pi R\!\int_{-d}^{d}\! h^2\!\left(\frac{\varphi}{h}\right)'^{\!2}\,dz \;\geq\; 0. $$
 </div>
 
-<p>The right-hand integrand is continuous and $\geq 0$ (it's $h^2$ times a square, and $h^2 \geq 0$). So the integral is $\geq 0$, hence:</p>
-<div class="math-display">
-  $$ A''(0) \;=\; 2\pi R\!\int_{-d}^{d}\!\varphi(L\varphi)\,dz \;\geq\; 0. $$
-</div>
-
-<p>This is <em>weak</em> stability. The next subsection upgrades it to strict.</p>
+<p>This is "weak" in the sense that it allows equality. The next subsection rules out equality for nonzero $\varphi$ and upgrades to strict $> 0$.</p>
 
 <hr>
 
-<!-- ============ 6. Strict inequality ============ -->
-<h3 id="s3-strict">6. Strict inequality</h3>
+<!-- ============ 8. Strict inequality ============ -->
+<h3 id="s3-strict">8. Strict inequality</h3>
 
-<p>§5 gave us $A''(0) \geq 0$. To conclude <em>strict</em> stability we want $A''(0) > 0$ for every nonzero $\varphi$. So we have to rule out the possibility that the right-hand integral could equal $0$ for some $\varphi$ that isn't itself $\equiv 0$.</p>
+<p>To upgrade $\geq 0$ to $> 0$, we show: $A''(0) = 0 \;\Longrightarrow\; \varphi \equiv 0$. Suppose $\int h^2\bigl((\varphi/h)'\bigr)^{\!2}dz = 0$. The integrand is continuous and $\geq 0$, so it vanishes pointwise:</p>
 
-<p><strong>Argue by contradiction.</strong> Suppose:</p>
-<ul>
-  <li>$\varphi \not\equiv 0$ (i.e. $\varphi$ is not the zero function), and</li>
-  <li>$\displaystyle\int_{-d}^{d}\! h^2\!\left(\frac{\varphi}{h}\right)'^{\!2}\,dz \;=\; 0$.</li>
-</ul>
-<p>We will derive $\varphi \equiv 0$, which contradicts the first assumption.</p>
+<ol>
+  <li>$h^2\bigl((\varphi/h)'\bigr)^2 = 0$ on $[-d, d]$.</li>
+  <li>Divide by $h^2 > 0$ (Step 2): $(\varphi/h)' = 0$.</li>
+  <li>Zero derivative $\Rightarrow$ $\varphi/h = c$ constant, i.e. $\varphi = c\,h$.</li>
+  <li>At the boundary: $0 = \varphi(d) = c\,h(d)$, and $h(d) > 0$ forces $c = 0$.</li>
+  <li>Hence $\varphi \equiv 0$.</li>
+</ol>
 
-<p><strong>(a) Integrand vanishes pointwise.</strong> The integrand is $h(z)^2\,\bigl((\varphi/h)'(z)\bigr)^2$. It is continuous on $[-d,d]$ and $\geq 0$ everywhere ($h^2 \geq 0$, and a square is $\geq 0$). A continuous nonnegative function whose integral is $0$ must be $0$ at every point:</p>
-<div class="math-display">
-  $$ h(z)^2 \,\bigl((\varphi/h)'(z)\bigr)^2 \;=\; 0 \qquad \text{for every } z \in [-d,d]. $$
-</div>
-
-<p><strong>(b) Divide out $h^2$.</strong> Step 2 gives $h(z)^2 > 0$ for every $z \in [-d,d]$. So we can divide both sides by $h^2$ and the equation still holds:</p>
-<div class="math-display">
-  $$ \bigl((\varphi/h)'(z)\bigr)^2 \;=\; 0 \qquad \text{for every } z \in [-d,d]. $$
-</div>
-
-<p><strong>(c) A square is $0$ only if the thing being squared is $0$.</strong> So</p>
-<div class="math-display">
-  $$ (\varphi/h)'(z) \;=\; 0 \qquad \text{for every } z \in [-d,d]. $$
-</div>
-
-<p><strong>(d) Zero derivative everywhere $\Longrightarrow$ constant function.</strong> So there is a constant $c$ with</p>
-<div class="math-display">
-  $$ \frac{\varphi(z)}{h(z)} \;=\; c \qquad \text{for every } z \in [-d,d], $$
-</div>
-<p>i.e. $\varphi(z) = c\,h(z)$ pointwise.</p>
-
-<p><strong>(e) Boundary kills $c$.</strong> Step 0 gives $\varphi(d) = 0$. Combining with $\varphi = c\,h$:</p>
-<div class="math-display">
-  $$ 0 \;=\; \varphi(d) \;=\; c\,h(d). $$
-</div>
-<p>Step 2 gives $h(d) > 0$, so the only way $c\,h(d) = 0$ is $c = 0$.</p>
-
-<p><strong>(f) Contradiction.</strong> From (d) and $c = 0$:</p>
-<div class="math-display">
-  $$ \varphi(z) \;=\; c\,h(z) \;=\; 0\cdot h(z) \;=\; 0 \qquad \text{for every } z \in [-d,d], $$
-</div>
-<p>i.e. $\varphi \equiv 0$. But we assumed $\varphi \not\equiv 0$. Contradiction. ✗</p>
-
-<p><strong>Conclusion.</strong> The assumption "the integral equals $0$ for some nonzero $\varphi$" must be false. Therefore for every nontrivial admissible $\varphi$, the integral is <em>strictly</em> positive:</p>
+<p>So the integral is zero only when $\varphi$ itself is zero. For every nontrivial admissible $\varphi$, the inequality is strict:</p>
 
 <div class="result">
   <div class="result-title">Step 3 Result — Strict Stability</div>
-  $$ A''(0) \;=\; 2\pi R\!\int_{-d}^{d}\!\varphi(L\varphi)\,dz \;=\; 2\pi R\!\int_{-d}^{d}\! h^2\!\left(\frac{\varphi}{h}\right)'^{\!2}\!dz \;>\; 0. $$
+  $$ A''(0) \;=\; 2\pi R\!\int_{-d}^{d}\! h^2\!\left(\frac{\varphi}{h}\right)'^{\!2}\!dz \;>\; 0. $$
   <p style="margin-top: 0.5rem;">The outer catenoid is <strong>strictly stable</strong>: every nonzero fixed-boundary perturbation strictly increases area.</p>
 </div>
 
 <h4>Summary of the proof (Steps 0–3)</h4>
 
 <ol>
-  <li><strong>Step 0.</strong> $A''(0) = 2\pi R\int \varphi(L\varphi)\,dz$, with $L\varphi = -\varphi'' - V\varphi$, $V = 2/(R^2\cosh^2(z/R))$, $\varphi(\pm d) = 0$.</li>
+  <li><strong>Step 0.</strong> $A''(0) = 2\pi R\int \varphi(L\varphi)\,dz$, with $L\varphi = -\varphi'' - q\varphi$, $q = 2/(R^2\cosh^2(z/R))$, $\varphi(\pm d) = 0$.</li>
   <li><strong>Step 1.</strong> $h(z) = 1 - (z/R)\tanh(z/R)$ satisfies $Lh = 0$.</li>
   <li><strong>Step 2.</strong> $h > 0$ on $[-d,d]$ when $R = R_{\text{out}}$.</li>
-  <li><strong>Step 3.</strong> Compute LHS $\int \varphi(L\varphi)\,dz$ and RHS $\int h^2(\varphi/h)'^{\,2}\,dz$ separately. Both equal $\int(\varphi'^{\,2} + (h''/h)\varphi^2)\,dz$ — using IBP and Step 1's $V = -h''/h$. So the two integrals match. The right side is an integral of a square, so $A''(0) \geq 0$, strict unless $\varphi \equiv 0$.</li>
+  <li><strong>Step 3.</strong> Substitute $\varphi = u\,h$ where $u = \varphi/h$. The $q\,\varphi$ term is killed by $Lh = 0$, and $\varphi\,L\varphi$ collapses to $(u')^2 h^2 - (u\,u'\,h^2)'$. The total derivative integrates to a boundary term that vanishes (since $\varphi(\pm d) = 0$ and $h(\pm d) > 0$ give $u(\pm d) = 0$), leaving $\int \varphi(L\varphi)\,dz = \int h^2 (u')^2\,dz \geq 0$. Strict $> 0$ unless $\varphi \equiv 0$ (§8 contradiction argument).</li>
 </ol>
 
 <p><strong>Conclusion:</strong> The outer catenoid is strictly stable. ∎</p>
