@@ -136,6 +136,24 @@
       }
       .main { padding: 1.5rem 1rem; }
     }
+
+    /* Print: hide sidebar, full-width content, clean page breaks, no browser header/footer */
+    @page { margin: 18mm 16mm; size: A4; }
+    @media print {
+      body { background: #fff; line-height: 1.55; }
+      .layout { display: block; }
+      .layout::before { display: none; }
+      .sidebar { display: none; }
+      .main { padding: 0; display: block; }
+      .main-inner { max-width: 100%; width: 100%; }
+      h1, h2, h3 { break-after: avoid; page-break-after: avoid; }
+      h2 { margin-top: 1.4rem; }
+      .boxed, .result, .question { break-inside: avoid; page-break-inside: avoid; }
+      svg, img, figure { break-inside: avoid; page-break-inside: avoid; max-width: 100%; height: auto; }
+      .math-display { break-inside: avoid; page-break-inside: avoid; }
+      a { color: var(--text); text-decoration: none; }
+      hr { margin: 1rem 0; }
+    }
   </style>
 </head>
 <body>
@@ -889,24 +907,85 @@
 
 <hr style="border-top: 1px dashed var(--border); margin: 1.5rem 0;">
 
-<h4>Geometric meaning of $Lh = 0$ — in plain English</h4>
+<h4>Geometric meaning of $Lh = 0$ — derived from Lecture 2's $H(f)$ formula</h4>
 
-<p>The equation $Lh = 0$ is just an ODE on the page, but it has a meaning that lets us guess solutions instead of grinding the ODE. Here's the meaning, in 4 plain steps:</p>
+<p>The equation $Lh = 0$ has a geometric meaning: pushing the catenoid in direction $\psi = h\cosh(z/R)$ keeps the surface minimal to first order in the push amount $t$. The lectures do not state this — we prove it here from Lecture 2's explicit formula for $H(f)$.</p>
 
-<ol>
-  <li><strong>"Minimal" is one equation.</strong> A surface of revolution with profile $f(z)$ is called minimal iff its mean curvature is zero: $H(f) = 0$. The catenoid $f_0 = R\cosh(z/R)$ satisfies $H(f_0) = 0$. That's <em>the</em> defining equation of minimality.</li>
-  <li><strong>Push the catenoid by $t\psi$</strong> (radially, by amount $t\psi(z)$ at height $z$). New profile: $f_0 + t\psi$. Its mean curvature $H(f_0 + t\psi)$ is some new function of $z$.</li>
-  <li><strong>Taylor-expand $H$ in $t$</strong>:
-    $$ H(f_0 + t\psi) \;=\; \underbrace{H(f_0)}_{=\,0} \;+\; t\cdot(\text{linear coefficient}) \;+\; O(t^2). $$
-    The linear coefficient is, by name, $L\psi$. (In words: $L$ is the rate at which mean curvature changes when you push the surface in direction $\psi$.)</li>
-  <li><strong>"New surface still minimal to first order in $t$"</strong> means: $H(f_0 + t\psi)$ must equal $0$ at order $t^1$. Setting the $t$-coefficient to zero gives $L\psi = 0$.</li>
-</ol>
-
-<div class="boxed" style="font-size: 1.05rem;">
-  <p style="margin: 0;"><strong>Plain English:</strong> $L\psi = 0$ is exactly the equation "<em>pushing the catenoid in direction $\psi$ keeps it minimal — to leading order in the push amount $t$.</em>"</p>
+<div class="boxed">
+  <p style="margin: 0;"><strong>Lemma (Linearization of $H$ at the catenoid).</strong> Let $\psi(z)$ be smooth and put $h(z) := \psi(z)/\cosh(z/R)$. Then</p>
+  $$ \frac{d}{dt}\bigg|_{t=0}\!H(f_0 + t\psi)(z) \;=\; -\,\frac{Lh(z)}{\cosh^2(z/R)}. $$
+  <p style="margin: 0.5rem 0 0;">Since $1/\cosh^2(z/R) > 0$ everywhere, the left-hand side vanishes identically iff $Lh \equiv 0$. So "$Lh = 0$" really is "$f_0 + t\psi$ stays minimal to first order in $t$."</p>
 </div>
 
-<p style="color: var(--muted); font-size: 0.9rem;"><strong>Side note (skip if you want):</strong> the $L$ that came out of the area calculation in Step 0 (where we expanded $A(t)$ to second order) is, by a real theorem in differential geometry, the same $L$ as the rate-of-change-of-$H$ here. We don't reprove that match — accept it as a fact about this $L$.</p>
+<p><strong>Proof.</strong> One long differentiation. Every line writes the formula out — no shorthand letters.</p>
+
+<p><em>The formula for $H$ from Lecture 2.</em> For any profile $f$,</p>
+<div class="math-display">
+  $$ H(f)(z) \;=\; \frac{1}{\sqrt{f'(z)^2 + 1}}\,\Bigg[-\frac{1}{f(z)} \;+\; \frac{f''(z)}{f'(z)^2 + 1}\Bigg]. $$
+</div>
+<p>This formula has three places where $f$ appears: the $\sqrt{f'^2+1}$ on the outside, the $-1/f$ inside the bracket, and the $f''/(f'^2+1)$ inside the bracket. Replace $f$ by $f_0 + t\psi$ and take $\tfrac{d}{dt}$ at $t = 0$ — every place contributes a piece. We do them one at a time.</p>
+
+<p><em>Derivative of the $-1/f$ piece.</em> Like $\frac{d}{dx}(-1/x) = 1/x^2$:</p>
+<div class="math-display">
+  $$ \frac{d}{dt}\bigg|_{t=0}\!\left(-\frac{1}{f_0(z) + t\psi(z)}\right) \;=\; \frac{\psi(z)}{f_0(z)^2} \;=\; \frac{\psi(z)}{R^2\cosh^2(z/R)}. $$
+</div>
+
+<p><em>Derivative of the $\sqrt{f'^2+1}$ piece.</em> Inside the root, the rate at $t=0$ is $2 f_0'\psi'$; the square root contributes $\frac{1}{2\sqrt{\,\cdot\,}}$:</p>
+<div class="math-display">
+  $$ \frac{d}{dt}\bigg|_{t=0}\!\sqrt{(f_0' + t\psi')^2 + 1} \;=\; \frac{f_0'(z)\,\psi'(z)}{\sqrt{f_0'(z)^2 + 1}} \;=\; \frac{\sinh(z/R)\,\psi'(z)}{\cosh(z/R)}. $$
+</div>
+
+<p><em>Derivative of the $f''/(f'^2+1)$ piece.</em> Quotient rule: top derives in $t$ to $\psi''$, bottom to $2 f_0'\psi'$:</p>
+<div class="math-display">
+  $$ \frac{\psi''(z)}{f_0'(z)^2+1} \;-\; \frac{f_0''(z)\cdot 2 f_0'(z)\,\psi'(z)}{(f_0'(z)^2+1)^2} \;=\; \frac{\psi''(z)}{\cosh^2(z/R)} \;-\; \frac{2\sinh(z/R)\,\psi'(z)}{R\cosh^3(z/R)}. $$
+</div>
+
+<p><em>Combine via the quotient rule on $H$.</em> Write $H = N/D$ where $N = -1/f + f''/(f'^2+1)$ and $D = \sqrt{f'^2+1}$. The quotient rule gives</p>
+<div class="math-display">
+  $$ \frac{dH}{dt}\bigg|_{t=0} \;=\; \frac{(\text{deriv. of }N)\cdot D(f_0) \;-\; N(f_0)\cdot(\text{deriv. of }D)}{D(f_0)^2}. $$
+</div>
+<p><em>The minimality of the catenoid kills one term.</em> At $f = f_0$:</p>
+<div class="math-display">
+  $$ N(f_0)(z) \;=\; -\frac{1}{R\cosh(z/R)} + \frac{(1/R)\cosh(z/R)}{\cosh^2(z/R)} \;=\; -\frac{1}{R\cosh(z/R)} + \frac{1}{R\cosh(z/R)} \;=\; 0. $$
+</div>
+<p>This is just "$H(f_0) = 0$", i.e. the catenoid is minimal (Lecture 2 eqn $\star$). It kills the second term. We are left with</p>
+<div class="boxed">
+  $$ \frac{d}{dt}\bigg|_{t=0}\!H(f_0 + t\psi) \;=\; \frac{1}{\cosh(z/R)}\Bigg[\frac{\psi(z)}{R^2\cosh^2(z/R)} + \frac{\psi''(z)}{\cosh^2(z/R)} - \frac{2\sinh(z/R)\,\psi'(z)}{R\cosh^3(z/R)}\Bigg]. \quad (\bullet) $$
+</div>
+
+<p><em>Substitute $\psi(z) = h(z)\cosh(z/R)$.</em> Use $\frac{d}{dz}\cosh(z/R) = \frac{1}{R}\sinh(z/R)$:</p>
+<div class="math-display">
+  $$ \psi'(z) \;=\; h'(z)\cosh(z/R) \;+\; \frac{h(z)\sinh(z/R)}{R}, $$
+</div>
+<div class="math-display">
+  $$ \psi''(z) \;=\; h''(z)\cosh(z/R) \;+\; \frac{2 h'(z)\sinh(z/R)}{R} \;+\; \frac{h(z)\cosh(z/R)}{R^2}. $$
+</div>
+<p>Plug into $(\bullet)$ and group by $h''$, $h'$, $h$:</p>
+
+<ul>
+  <li><strong>$h''$ piece</strong> comes only from $\psi''/\cosh^2$: gives $\dfrac{h''(z)\cosh(z/R)}{\cosh^2(z/R)} = \dfrac{h''(z)}{\cosh(z/R)}.$</li>
+  <li><strong>$h'$ pieces cancel exactly.</strong> From $\psi''/\cosh^2$: $+\dfrac{2 h'(z)\sinh(z/R)}{R\cosh^2(z/R)}$. From $-2\sinh\psi'/(R\cosh^3)$: $-\dfrac{2 h'(z)\sinh(z/R)}{R\cosh^2(z/R)}$. Sum is $0$. ✓</li>
+  <li><strong>$h$ pieces.</strong> Three contributions:
+    <ul>
+      <li>From $\psi/(R^2\cosh^2)$: $\;\dfrac{h(z)}{R^2\cosh(z/R)}.$</li>
+      <li>From $\psi''/\cosh^2$ (the $h\cosh/R^2$ piece): $\;\dfrac{h(z)}{R^2\cosh(z/R)}.$</li>
+      <li>From $-2\sinh\psi'/(R\cosh^3)$ (the $h\sinh/R$ piece): $\;-\dfrac{2 h(z)\sinh^2(z/R)}{R^2\cosh^3(z/R)}.$</li>
+    </ul>
+    Add: $\dfrac{2 h(z)}{R^2\cosh^3(z/R)}\big[\cosh^2(z/R) - \sinh^2(z/R)\big] \;=\; \dfrac{2 h(z)}{R^2\cosh^3(z/R)}$, since $\cosh^2 - \sinh^2 = 1$.</li>
+</ul>
+
+<p>So the bracket in $(\bullet)$ simplifies to $\dfrac{h''(z)}{\cosh(z/R)} + \dfrac{2 h(z)}{R^2\cosh^3(z/R)}.$</p>
+
+<p><em>Assemble.</em> Multiply by the outside $1/\cosh(z/R)$ and pull out a common $1/\cosh^2(z/R)$:</p>
+<div class="math-display">
+  $$ \frac{dH}{dt}\bigg|_{t=0} \;=\; \frac{h''(z)}{\cosh^2(z/R)} + \frac{2 h(z)}{R^2\cosh^4(z/R)} \;=\; \frac{1}{\cosh^2(z/R)}\Bigg[h''(z) + \frac{2 h(z)}{R^2\cosh^2(z/R)}\Bigg]. $$
+</div>
+
+<p>The bracket is exactly $-Lh(z)$ since $Lh = -h'' - \tfrac{2 h}{R^2\cosh^2(z/R)}.$ Therefore</p>
+<div class="math-display">
+  $$ \frac{dH}{dt}\bigg|_{t=0} \;=\; -\,\frac{Lh(z)}{\cosh^2(z/R)}, $$
+</div>
+<p>which is the lemma. ∎</p>
 
 <hr style="border-top: 1px dashed var(--border); margin: 1.5rem 0;">
 
