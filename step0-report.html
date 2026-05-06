@@ -878,62 +878,52 @@
 <!-- ============ 3. Two solutions from symmetry ============ -->
 <h3 id="s1-solutions">3. Where does $h$ come from?</h3>
 
-<h4>Reading this section in plain English first</h4>
-
-<p>Our job here is to <strong>find a function $h$ with $Lh = 0$</strong>. Nothing fancy — just produce such an $h$. But before guessing randomly, let's understand what that equation <em>means</em>, because the meaning hands us the answer for free.</p>
+<h4>What we need from this step, and why</h4>
 
 <div class="boxed">
-  <p style="margin: 0;"><strong>Bottom line (read this twice):</strong> $\,Lh = 0\,$ is exactly the condition "<em>if I push the catenoid in the direction $h$ by a tiny amount $t$, the result is still a minimal surface — to leading order in $t$.</em>"</p>
+  <p style="margin: 0 0 0.5rem;"><strong>Job of Step 1:</strong> produce ONE function $h(z)$ with $Lh = 0$.</p>
+  <p style="margin: 0;"><strong>Why we want it:</strong> Step 3 will use a clever trick (Picone's identity) to prove $A''(0) \geq 0$. That trick needs exactly one ingredient — a positive function $h$ with $Lh = 0$. Step 1's only purpose is to hand that ingredient to Step 3.</p>
 </div>
 
-<p>So "find $h$ with $Lh = 0$" really asks: <strong>in which directions can you nudge the catenoid without leaving the family of minimal surfaces?</strong> Once you see that, the answer is obvious — wiggle the catenoid's own parameters. That's the entire trick of §3.</p>
+<p>So: don't worry yet about <em>what $Lh = 0$ means geometrically</em>. We just need one function that satisfies it. Below we'll cheat — instead of solving the ODE, we'll exploit a geometric meaning of $Lh = 0$ to read off two solutions for free.</p>
 
 <hr style="border-top: 1px dashed var(--border); margin: 1.5rem 0;">
 
-<h4>Why $L\psi = 0$ means "the perturbation doesn't break minimality"</h4>
+<h4>Geometric meaning of $Lh = 0$ — in plain English</h4>
 
-<p>Let's derive this cleanly so it's not magic.</p>
+<p>The equation $Lh = 0$ is just an ODE on the page, but it has a meaning that lets us guess solutions instead of grinding the ODE. Here's the meaning, in 4 plain steps:</p>
 
-<p><strong>Setup.</strong> A surface with profile $f$ is called <em>minimal</em> iff its mean curvature is zero: $H(f) = 0$. For a surface of revolution $f(z)$, $H(f)$ is some expression built from $f$, $f'$, $f''$. The catenoid $f_0(z) = R\cosh(z/R)$ makes $H(f_0) = 0$.</p>
+<ol>
+  <li><strong>"Minimal" is one equation.</strong> A surface of revolution with profile $f(z)$ is called minimal iff its mean curvature is zero: $H(f) = 0$. The catenoid $f_0 = R\cosh(z/R)$ satisfies $H(f_0) = 0$. That's <em>the</em> defining equation of minimality.</li>
+  <li><strong>Push the catenoid by $t\psi$</strong> (radially, by amount $t\psi(z)$ at height $z$). New profile: $f_0 + t\psi$. Its mean curvature $H(f_0 + t\psi)$ is some new function of $z$.</li>
+  <li><strong>Taylor-expand $H$ in $t$</strong>:
+    $$ H(f_0 + t\psi) \;=\; \underbrace{H(f_0)}_{=\,0} \;+\; t\cdot(\text{linear coefficient}) \;+\; O(t^2). $$
+    The linear coefficient is, by name, $L\psi$. (In words: $L$ is the rate at which mean curvature changes when you push the surface in direction $\psi$.)</li>
+  <li><strong>"New surface still minimal to first order in $t$"</strong> means: $H(f_0 + t\psi)$ must equal $0$ at order $t^1$. Setting the $t$-coefficient to zero gives $L\psi = 0$.</li>
+</ol>
 
-<p><strong>Perturb it.</strong> Push the catenoid in some direction $\psi$ by a small amount $t$:</p>
-<div class="math-display">
-  $$ f_0 \;\longrightarrow\; f_0 + t\,\psi. $$
+<div class="boxed" style="font-size: 1.05rem;">
+  <p style="margin: 0;"><strong>Plain English:</strong> $L\psi = 0$ is exactly the equation "<em>pushing the catenoid in direction $\psi$ keeps it minimal — to leading order in the push amount $t$.</em>"</p>
 </div>
 
-<p><strong>Ask: is the perturbed surface still minimal?</strong> Compute its mean curvature and Taylor-expand in $t$:</p>
-<div class="math-display">
-  $$ H(f_0 + t\psi) \;=\; \underbrace{H(f_0)}_{=\,0 \text{ because } f_0 \text{ is minimal}} \;+\; t\cdot \big[\text{first-order piece}\big] \;+\; t^2\cdot[\cdots] \;+\; \cdots $$
-</div>
-
-<p>The first-order piece — the linear part of $H$ in the direction $\psi$ — is <strong>exactly what we call $L\psi$</strong>. This is not a coincidence: $L$ was defined to be the linearization of $H$ around $f_0$. So</p>
-<div class="math-display">
-  $$ H(f_0 + t\psi) \;=\; t\cdot L\psi \;+\; O(t^2). $$
-</div>
-
-<p><strong>Now the punchline.</strong> For the perturbed surface to still be minimal — i.e. $H(f_0 + t\psi) = 0$ — we need the right-hand side to vanish. Ignoring $O(t^2)$, that leaves</p>
-<div class="math-display" style="font-size: 1.2rem;">
-  $$ \boxed{\;L\psi = 0 \;\Longleftrightarrow\; \text{pushing by }\psi\text{ keeps the surface minimal to first order in }t.\;} $$
-</div>
-
-<p>That's the content. $Lh = 0$ is not a random ODE — it's literally the equation "$h$ is an allowed perturbation direction that preserves minimality to leading order."</p>
+<p style="color: var(--muted); font-size: 0.9rem;"><strong>Side note (skip if you want):</strong> the $L$ that came out of the area calculation in Step 0 (where we expanded $A(t)$ to second order) is, by a real theorem in differential geometry, the same $L$ as the rate-of-change-of-$H$ here. We don't reprove that match — accept it as a fact about this $L$.</p>
 
 <hr style="border-top: 1px dashed var(--border); margin: 1.5rem 0;">
 
-<h4>The lazy way to find such an $h$: wiggle the catenoid's own parameters</h4>
+<h4>The shortcut: wiggle the catenoid family, get $L\psi = 0$ for free</h4>
 
-<p>Finding $\psi$ that solves $L\psi = 0$ sounds hard if you attack it as an ODE. But here's the free lunch:</p>
+<p>Now we cash in the geometric meaning. We want a $\psi$ with $L\psi = 0$. The meaning says: that's the same as a $\psi$ for which $f_0 + t\psi$ is minimal at first order in $t$.</p>
 
 <div class="result">
-  <div class="result-title">Observation</div>
-  <p>If we can produce a $\psi$ such that $f_0 + t\psi$ is <em>actually, genuinely</em> minimal for every small $t$ (not just approximately), then it's in particular minimal to first order in $t$ — so $L\psi = 0$ automatically, no ODE work needed.</p>
+  <div class="result-title">Free lunch</div>
+  <p>If we can find a $\psi$ such that $f_0 + t\psi$ is <em>genuinely</em> minimal for every small $t$ (not just to first order), then in particular it's minimal at first order — so $L\psi = 0$ automatically. No ODE solving needed.</p>
 </div>
 
-<p>Where do such $\psi$ come from? <strong>The catenoid family itself.</strong> The general catenoid has two free parameters:</p>
+<p>Where can we find such $\psi$? <strong>From the catenoid family itself.</strong> The general catenoid has two parameters:</p>
 <div class="math-display">
   $$ f(z;\, z_0,\, R) \;=\; R\cosh\!\left(\frac{z - z_0}{R}\right). $$
 </div>
-<p>For <em>every</em> choice of $(z_0, R)$, this is a minimal surface. So if we hold one parameter fixed and wiggle the other, we trace out a whole 1-parameter family of minimal surfaces — and the tangent direction of that wiggle is a ready-made $\psi$ with $L\psi = 0$.</p>
+<p>For <em>every</em> choice of $(z_0, R)$, this is minimal. So if we hold one parameter fixed and wiggle the other, we sweep out a 1-parameter family of EXACT minimal surfaces — and the tangent direction $\psi = \partial_t f_t |_{t=0}$ is a ready-made solution with $L\psi = 0$.</p>
 
 <h4>Two natural wiggles to try</h4>
 
@@ -942,7 +932,7 @@
   & \textbf{Slide: } z_0 \to z_0 + t & \textbf{Scale: } R \to R + t \\ \hline
   \text{What it does to the catenoid} & \text{shifts it up by }t & \text{makes it fatter by }t \\
   \text{Result still minimal for every }t? & \checkmark \text{ (same shape, moved)} & \checkmark \text{ (same family, different }R\text{)} \\
-  \text{So }L\psi = 0? & \checkmark \text{ automatically} & \checkmark \text{ automatically} \\
+  \text{So }Lh = 0? & \checkmark \text{ automatically} & \checkmark \text{ automatically} \\
   \text{Corresponding }\psi & \dfrac{\partial f}{\partial z_0}\Big|_{z_0=0} & \dfrac{\partial f}{\partial R}
   \end{array} $$
 </div>
